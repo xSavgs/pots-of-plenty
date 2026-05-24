@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product — Pots of Plenty</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body>
+    <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
+
+    <!-- NAV -->
+    <header class="navbar">
+        <div class="nav-left">
+            <button id="menuBtn" class="icon-btn">☰</button>
+            <button id="searchBtn" class="icon-btn">⌕</button>
+        </div>
+
+        <div class="logo">
+            <a href="index.html">
+                <img src="assets/logo.png" alt="Logo" />
+            </a>
+        </div>
+
+        <div class="nav-right">
+            <button id="userBtn" class="icon-btn">👤</button>
+            <button id="cartBtn" class="icon-btn">🛒</button>
+        </div>
+    </header>
+
+    <!-- PRODUCT -->
+    <section class="section product-page">
+        <div class="product-gallery">
+            <button class="img-nav prev" id="prevImg">‹</button>
+
+            <img id="productImage" src="" alt="Product Image" />
+
+            <button class="img-nav next" id="nextImg">›</button>
+        </div>
+
+        <div class="product-info">
+            <h1 id="productTitle"></h1>
+            <p id="productPrice"></p>
+
+            <!-- SIZE SELECTOR -->
+            <div class="size-selector" style="margin: 15px 0;">
+                <label for="size">Size:</label>
+                <select id="size">
+                    <option value="S">S</option>
+                    <option value="M" selected>M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                    <option value="XXXL">XXXL</option>
+                </select>
+            </div>
+
+            <button class="hero-btn" id="addToCartBtn">ADD TO CART</button>
+        </div>
+    </section>
+
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Pots of Plenty</h2>
+            <button class="close-menu" id="closeMenu">×</button>
+        </div>
+
+        <nav class="menu-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+        </nav>
+
+        <div class="menu-footer">
+            <p>⚓ Scarborough Harbour</p>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="closeCart">×</button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">Your cart is empty.</div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total" id="cartTotal">Total: £0.00</div>
+            <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
+        </div>
+    </div>
+
+    <div class="search-overlay" id="searchBar">
+        <div class="search-box">
+            <input type="text" placeholder="Search products..." id="searchInput" />
+            <button class="search-submit" id="searchSubmit">→</button>
+        </div>
+    </div>
+</body>
+</html>

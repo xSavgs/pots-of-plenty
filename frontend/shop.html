@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shop — Pots of Plenty</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet" />
+
+        <link rel="stylesheet" href="style.css" />
+        <script src="script.js" defer></script>
+        <script src="https://js.stripe.com/v3/"></script>
+    </head>
+
+    <body>
+        <!-- TOP BAR -->
+        <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
+
+        <!-- NAVBAR -->
+        <header class="navbar">
+            <div class="nav-left">
+                <button id="menuBtn" class="icon-btn">☰</button>
+                <button id="searchBtn" class="icon-btn">⌕</button>
+            </div>
+
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/logo.png" alt="Logo" />
+                </a>
+            </div>
+
+            <div class="nav-right">
+                <button id="userBtn" class="icon-btn">👤</button>
+                <button id="cartBtn" class="icon-btn">🛒</button>
+            </div>
+        </header>
+
+        <!-- HERO -->
+        <section class="hero" style="height: 60vh">
+            <img src="assets/hero.jpg" class="hero-image" alt="" />
+
+            <div class="hero-overlay"></div>
+
+            <div class="hero-content">
+                <p class="small-text">THE COLLECTION</p>
+
+                <h1 style="font-size: 64px">Shop Pots of Plenty</h1>
+            </div>
+        </section>
+
+        <!-- PRODUCTS -->
+        <section class="section products-section">
+            <div class="section-header">
+                <h2>ALL PRODUCTS</h2>
+            </div>
+
+            <div class="products-grid">
+                <!-- WHITE HOODIE -->
+                <div class="product-card" data-product="white-hoodie">
+                    <div class="product-image">
+                        <img src="assets/hoodie.jpg" class="front-image" alt="White Hoodie Front" />
+                        <img src="assets/hoodieback.jpg" class="back-image" alt="White Hoodie Back" />
+                    </div>
+
+                    <h3>Hoodie — White</h3>
+                    <p>£55.00</p>
+                </div>
+
+                <!-- BLACK HOODIE -->
+                <div class="product-card" data-product="black-hoodie">
+                    <div class="product-image">
+                        <img src="assets/hoodie2.jpg" class="front-image" alt="Black Hoodie Front" />
+                        <img src="assets/hoodie2back.jpg" class="back-image" alt="Black Hoodie Back" />
+                    </div>
+
+                    <h3>Hoodie — Black</h3>
+                    <p>£55.00</p>
+                </div>
+
+                <!-- WHITE T-SHIRT (PLACEHOLDER) -->
+                <div class="product-card" data-product="white-tshirt">
+                    <div class="product-image">
+                        <img src="assets/tshirt.jpg" class="front-image" alt="White T-Shirt Front" />
+                        <img src="assets/tshirtback.jpg" class="back-image" alt="White T-Shirt Back" />
+                    </div>
+
+                    <h3>T-Shirt — White</h3>
+                    <p>£30.00</p>
+                </div>
+
+                <!-- BLACK T-SHIRT -->
+                <div class="product-card" data-product="black-tshirt">
+                    <div class="product-image">
+                        <img src="assets/tshirt2.jpg" class="front-image" alt="Black T-Shirt Front" />
+                        <img src="assets/tshirt2back.jpg" class="back-image" alt="Black T-Shirt Back" />
+                    </div>
+
+                    <h3>T-Shirt — Black</h3>
+                    <p>£30.00</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <h2>Pots of Plenty</h2>
+                <button class="close-menu" id="closeMenu">×</button>
+            </div>
+
+            <nav class="menu-links">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+
+            <div class="menu-footer">
+                <p>⚓ Scarborough Harbour</p>
+            </div>
+        </div>
+
+        <div class="menu-overlay" id="menuOverlay"></div>
+
+        <div class="cart-panel" id="cartPanel">
+            <div class="cart-header">
+                <h2>Your Cart</h2>
+                <button class="close-cart" id="closeCart">×</button>
+            </div>
+
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">Your cart is empty.</div>
+            </div>
+
+            <div class="cart-footer">
+                <div class="cart-total" id="cartTotal">Total: £0.00</div>
+
+                <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
+            </div>
+        </div>
+
+        <div class="search-overlay" id="searchBar">
+            <div class="search-box">
+                <input type="text" placeholder="Search products..." id="searchInput" />
+
+                <button class="search-submit" id="searchSubmit">→</button>
+            </div>
+        </div>
+    </body>
+</html>
