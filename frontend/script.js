@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             console.log("Sending cart:", cart);
 
-            const res = await fetch("http://localhost:3000/create-checkout-session", {
+            const res = await fetch("/create-checkout-session", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
