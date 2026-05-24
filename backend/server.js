@@ -24,6 +24,10 @@ dotenv.config({
    APP SETUP
 ========================= */
 
+const BASE_URL =
+    process.env.BASE_URL ||
+    "https://pots-of-plenty-production.up.railway.app";
+
 const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -87,8 +91,8 @@ app.post("/create-checkout-session", async (req, res) => {
 
             line_items,
 
-            success_url: `${baseURL}/success`,
-            cancel_url: `${baseURL}/cancel`
+            success_url: `${BASE_URL}/success`,
+            cancel_url: `${BASE_URL}/cancel`
         });
 
         res.json({ url: session.url });
