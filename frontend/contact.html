@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact — Pots of Plenty</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        ⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE
+    </div>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="nav-left">
+            <button id="menuBtn" class="icon-btn">☰</button>
+            <button id="searchBtn" class="icon-btn">⌕</button>
+        </div>
+
+        <div class="logo">
+            <a href="index.html">
+                <img src="assets/logo.png" alt="Logo">
+            </a>
+        </div>
+
+        <div class="nav-right">
+            <button id="userBtn" class="icon-btn">👤</button>
+            <button id="cartBtn" class="icon-btn">🛒</button>
+        </div>
+    </header>
+
+    <!-- CONTACT HERO -->
+    <section class="contact-hero">
+
+        <img src="assets/boat.jpg" alt="Harbour" class="contact-hero-image">
+
+        <div class="contact-overlay"></div>
+
+        <div class="contact-content">
+
+            <p class="contact-label">GET IN TOUCH</p>
+
+            <h1>
+                Message the<br>
+                harbour team
+            </h1>
+
+            <p class="contact-sub">
+                Orders, enquiries, or collection questions — we’re here.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section class="section contact-section">
+
+        <div class="contact-grid">
+
+            <!-- FORM -->
+            <div class="contact-form">
+
+                <h2>Send a message</h2>
+
+                <form>
+
+                    <input type="text" placeholder="Your name" required>
+
+                    <input type="email" placeholder="Your email" required>
+
+                    <textarea placeholder="Your message" rows="6" required></textarea>
+
+                    <button type="submit" class="hero-btn">
+                        SEND MESSAGE
+                    </button>
+
+                </form>
+
+            </div>
+
+            <!-- INFO -->
+            <div class="contact-info">
+
+                <h2>Contact Details</h2>
+                
+                <p>
+                    <a href="tel:+447766234997" class="contact-phone">+44 7766 234 997</a>
+                </p>
+                
+                <p>
+                    Scarborough Harbour<br>
+                    North Yorkshire, UK
+                </p>
+
+                <p>
+                    Collection only — fresh catch daily.
+                </p>
+
+                <h3>Socials</h3>
+
+                <p>
+                    Facebook<br>
+                    TikTok<br>
+                    YouTube
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- CTA -->
+    <section class="contact-cta section">
+
+        <h2>Fresh from the sea daily</h2>
+
+        <p>Follow us online for live catches and updates.</p>
+
+        <a href="index.html" class="outline-btn">
+            BACK TO HOME
+        </a>
+
+    </section>
+
+</body>
+</html>
