@@ -26,7 +26,7 @@ dotenv.config({
 
 const BASE_URL =
     process.env.BASE_URL ||
-    "https://pots-of-plenty-production.up.railway.app";
+    "https://potsofplenty.uk";
 
 const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
