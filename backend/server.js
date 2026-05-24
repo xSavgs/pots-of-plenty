@@ -103,7 +103,8 @@ app.post("/create-checkout-session", async (req, res) => {
    STATIC FRONTEND
 ========================= */
 
-const frontendPath = path.join(__dirname, "../frontend");
+const frontendPath = path.join(__dirname, "frontend");
+console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
