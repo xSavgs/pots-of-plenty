@@ -3,6 +3,9 @@ const stripe = Stripe("pk_test_51TZyqWBIpzBwfSxfZzCGIp706IWgNweJWfmEszmJPORS92Pg
 console.log("script loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
+    
+    let currentImageIndex = 0;
+    let currentImages = [];
 
     const menuBtn = document.getElementById("menuBtn");
     const cartBtn = document.getElementById("cartBtn");
@@ -127,11 +130,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (title) title.textContent = product.title;
         if (price) price.textContent = `£${product.price.toFixed(2)}`;
-        if (img) img.src = product.images[0];
+
+        // RESET IMAGE STATE
+        currentImages = product.images;
+        currentImageIndex = 0;
+
+        if (img) img.src = currentImages[currentImageIndex];
+
+        // NEXT BUTTON
+        const nextBtn = document.getElementById("nextImg");
+        const prevBtn = document.getElementById("prevImg");
+
+        if (nextBtn) {
+            nextBtn.onclick = () => {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                img.src = currentImages[currentImageIndex];
+            };
+        }
+
+        if (prevBtn) {
+            prevBtn.onclick = () => {
+                currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+
+                img.src = currentImages[currentImageIndex];
+            };
+        }
 
         if (addBtn) {
             addBtn.onclick = () => {
-
                 const sizeEl = document.getElementById("size");
                 const size = sizeEl ? sizeEl.value : "M";
 
