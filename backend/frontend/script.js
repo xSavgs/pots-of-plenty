@@ -3,7 +3,10 @@ const stripe = Stripe("pk_test_51TZyqWBIpzBwfSxfZzCGIp706IWgNweJWfmEszmJPORS92Pg
 console.log("script loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
-    
+
+    /* =========================
+       STATE (IMAGE SLIDER FIX)
+    ========================= */
     let currentImageIndex = 0;
     let currentImages = [];
 
@@ -107,13 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCart();
 
     /* =========================
-       PRODUCT PAGE
+       PRODUCT PAGE + IMAGE SLIDER FIX
     ========================= */
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-
-    console.log("URL product id:", id);
 
     function loadProduct(productId) {
         const product = products[productId];
@@ -131,30 +132,48 @@ document.addEventListener("DOMContentLoaded", () => {
         if (title) title.textContent = product.title;
         if (price) price.textContent = `£${product.price.toFixed(2)}`;
 
-        // RESET IMAGE STATE
+        /* =========================
+           IMAGE SLIDER (FIXED)
+        ========================= */
+
         currentImages = product.images;
         currentImageIndex = 0;
 
-        if (img) img.src = currentImages[currentImageIndex];
+        if (img) img.src = currentImages[0];
 
-        // NEXT BUTTON
         const nextBtn = document.getElementById("nextImg");
         const prevBtn = document.getElementById("prevImg");
 
-        if (nextBtn) {
-            nextBtn.onclick = () => {
+        // SAFE RESET (prevents duplicate listeners)
+        const newNext = nextBtn ? nextBtn.cloneNode(true) : null;
+        const newPrev = prevBtn ? prevBtn.cloneNode(true) : null;
+
+        if (nextBtn && newNext) nextBtn.replaceWith(newNext);
+        if (prevBtn && newPrev) prevBtn.replaceWith(newPrev);
+
+        const finalNext = document.getElementById("nextImg");
+        const finalPrev = document.getElementById("prevImg");
+
+        if (finalNext) {
+            finalNext.addEventListener("click", () => {
                 currentImageIndex = (currentImageIndex + 1) % currentImages.length;
                 img.src = currentImages[currentImageIndex];
-            };
+            });
         }
 
-        if (prevBtn) {
-            prevBtn.onclick = () => {
-                currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        if (finalPrev) {
+            finalPrev.addEventListener("click", () => {
+                currentImageIndex =
+                    (currentImageIndex - 1 + currentImages.length) %
+                    currentImages.length;
 
                 img.src = currentImages[currentImageIndex];
-            };
+            });
         }
+
+        /* =========================
+           ADD TO CART
+        ========================= */
 
         if (addBtn) {
             addBtn.onclick = () => {
@@ -171,8 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateCart();
 
                 cartPanel?.classList.add("open");
-
-                console.log("Added:", product.title, "Size:", size);
             };
         }
     }
@@ -186,12 +203,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function setupProductClicks() {
         const cards = document.querySelectorAll(".product-card");
 
-        console.log("Product cards found:", cards.length);
-
         cards.forEach((card) => {
             card.addEventListener("click", () => {
                 const productId = card.dataset.product;
-
                 if (!productId) return;
 
                 window.location.href = `/product?id=${encodeURIComponent(productId)}`;
@@ -251,8 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkoutBtn?.addEventListener("click", async () => {
         try {
-            console.log("Sending cart:", cart);
-
             const res = await fetch("create-checkout-session", {
                 method: "POST",
                 headers: {
@@ -262,8 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await res.json();
-
-            console.log("Stripe response:", data);
 
             if (data.url) {
                 window.location.href = data.url;
