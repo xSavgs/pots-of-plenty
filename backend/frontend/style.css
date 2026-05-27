@@ -563,37 +563,6 @@ img {
   cursor: pointer;
 }
 
-/* SIDE MENU UNDERLINE ANIMATION */
-
-.menu-links a {
-  position: relative;
-  display: inline-block;
-  padding-bottom: 6px;
-}
-
-.menu-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-
-  height: 1px;
-  width: 0;
-
-  background: white;
-
-  transition: width 0.35s ease;
-}
-
-.menu-links a:hover::after {
-  width: 100%;
-}
-
-/* hover animation */
-.menu-links a:hover::after {
-  transform: scaleX(1);
-}
-
 .menu-links {
   display: flex;
   flex-direction: column;
