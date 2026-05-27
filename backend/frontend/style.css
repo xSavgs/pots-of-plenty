@@ -301,6 +301,16 @@ img {
   letter-spacing: 1px;
 }
 
+.message-box-link {
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.message-box-link {
+  color: black;
+  background-color: white;
+}
+
 /* STORY */
 
 .brand-story {
