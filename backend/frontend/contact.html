@@ -10,8 +10,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/script.js" defer></script>
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 
@@ -30,8 +30,8 @@
         </div>
 
         <div class="logo">
-            <a href="index.html">
-                <img src="assets/logo.png" alt="Logo">
+            <a href="/">
+                <img src="/assets/logo.png" alt="Logo">
             </a>
         </div>
 
@@ -44,7 +44,7 @@
     <!-- CONTACT HERO -->
     <section class="contact-hero">
 
-        <img src="assets/boat.jpg" alt="Harbour" class="contact-hero-image">
+        <img src="/assets/boat.jpg" alt="Harbour" class="contact-hero-image">
 
         <div class="contact-overlay"></div>
 
@@ -76,17 +76,13 @@
                 <h2>Send a message</h2>
 
                 <form>
-
                     <input type="text" placeholder="Your name" required>
-
                     <input type="email" placeholder="Your email" required>
-
                     <textarea placeholder="Your message" rows="6" required></textarea>
 
                     <button type="submit" class="hero-btn">
                         SEND MESSAGE
                     </button>
-
                 </form>
 
             </div>
@@ -95,11 +91,13 @@
             <div class="contact-info">
 
                 <h2>Contact Details</h2>
-                
+
                 <p>
-                    <a href="tel:+447766234997" class="contact-phone">+44 7766 234 997</a>
+                    <a href="tel:+447766234997" class="contact-phone">
+                        +44 7766 234 997
+                    </a>
                 </p>
-                
+
                 <p>
                     Scarborough Harbour<br>
                     North Yorkshire, UK
@@ -112,9 +110,9 @@
                 <h3>Socials</h3>
 
                 <p>
-                    Facebook<br>
-                    TikTok<br>
-                    YouTube
+                    <a href="https://www.tiktok.com/@potsofplenty" target="_blank">TikTok</a><br>
+                    <a href="https://www.facebook.com/p/Pots-of-Plenty-61578293768602/" target="_blank">Facebook</a><br>
+                    <a href="https://youtube.com/@potsofplenty" target="_blank">YouTube</a>
                 </p>
 
             </div>
@@ -130,11 +128,57 @@
 
         <p>Follow us online for live catches and updates.</p>
 
-        <a href="index.html" class="outline-btn">
+        <a href="/" class="outline-btn">
             BACK TO HOME
         </a>
 
     </section>
+
+    <!-- SIDE MENU -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Pots of Plenty</h2>
+            <button class="close-menu" id="closeMenu">×</button>
+        </div>
+
+        <nav class="menu-links">
+            <a href="/">Home</a>
+            <a href="/shop">Shop</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+        </nav>
+
+        <div class="menu-footer">
+            <p>⚓ Scarborough Harbour</p>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- CART -->
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="closeCart">×</button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">Your cart is empty.</div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total" id="cartTotal">Total: £0.00</div>
+            <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-overlay" id="searchBar">
+        <div class="search-box">
+            <input type="text" placeholder="Search products..." id="searchInput" />
+            <button class="search-submit" id="searchSubmit">→</button>
+        </div>
+    </div>
 
 </body>
 </html>

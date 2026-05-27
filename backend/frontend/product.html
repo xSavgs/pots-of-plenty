@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product — Pots of Plenty</title>
 
-    <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/script.js" defer></script>
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
+
     <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
 
     <!-- NAV -->
@@ -21,8 +22,8 @@
         </div>
 
         <div class="logo">
-            <a href="index.html">
-                <img src="assets/logo.png" alt="Logo" />
+            <a href="/">
+                <img src="/assets/logo.png" alt="Logo" />
             </a>
         </div>
 
@@ -34,16 +35,17 @@
 
     <!-- PRODUCT -->
     <section class="section product-page">
+
         <div class="product-gallery">
             <button class="img-nav prev" id="prevImg">‹</button>
 
-            <img id="productImage" src="" alt="Product Image" />
+            <img id="productImage" src="/assets/placeholder.jpg" alt="Product Image" />
 
             <button class="img-nav next" id="nextImg">›</button>
         </div>
 
         <div class="product-info">
-            <h1 id="productTitle"></h1>
+            <h1 id="productTitle">Loading...</h1>
             <p id="productPrice"></p>
 
             <!-- SIZE SELECTOR -->
@@ -63,8 +65,10 @@
 
             <p>Orders could take up to 2 weeks to arrive</p>
         </div>
+
     </section>
 
+    <!-- SIDE MENU -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
             <h2>Pots of Plenty</h2>
@@ -72,10 +76,10 @@
         </div>
 
         <nav class="menu-links">
-            <a href="index.html">Home</a>
-            <a href="shop.html">Shop</a>
-            <a href="about.html">About</a>
-            <a href="contact.html">Contact</a>
+            <a href="/">Home</a>
+            <a href="/shop">Shop</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
         </nav>
 
         <div class="menu-footer">
@@ -85,6 +89,7 @@
 
     <div class="menu-overlay" id="menuOverlay"></div>
 
+    <!-- CART -->
     <div class="cart-panel" id="cartPanel">
         <div class="cart-header">
             <h2>Your Cart</h2>
@@ -101,11 +106,13 @@
         </div>
     </div>
 
+    <!-- SEARCH -->
     <div class="search-overlay" id="searchBar">
         <div class="search-box">
             <input type="text" placeholder="Search products..." id="searchInput" />
             <button class="search-submit" id="searchSubmit">→</button>
         </div>
     </div>
+
 </body>
 </html>
