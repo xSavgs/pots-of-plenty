@@ -563,12 +563,7 @@ img {
   cursor: pointer;
 }
 
-/* SIDE MENU LINK UNDERLINE ANIMATION */
-.menu-links a {
-  position: relative;
-  display: inline-block;
-  padding-bottom: 6px;
-}
+/* SIDE MENU UNDERLINE ANIMATION */
 
 .menu-links a {
   position: relative;
@@ -576,7 +571,6 @@ img {
   padding-bottom: 6px;
 }
 
-/* underline base */
 .menu-links a::after {
   content: "";
   position: absolute;
@@ -584,12 +578,15 @@ img {
   bottom: 0;
 
   height: 1px;
-  width: 100%;          /* fallback */
+  width: 0;
+
   background: white;
 
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s ease;
+  transition: width 0.35s ease;
+}
+
+.menu-links a:hover::after {
+  width: 100%;
 }
 
 /* hover animation */
