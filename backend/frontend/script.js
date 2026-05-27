@@ -1,4 +1,4 @@
-const stripe = Stripe("pk_test_51TZyqWBIpzBwfSxfZzCGIp706IWgNweJWfmEszmJPORS92Pg6tXetWOvpLz3EXQQcJvrj3u8alEo7YOswEqETP87008indfBww");
+const stripe = Stripe("pk_live_51TZyqWBIpzBwfSxf63REdO08GRFlVnoNlnIBG2ZVyDo5eyov3wIToXCQKlzUUHroShELNeORnuaGPMOZDAQudj1N00qAQO2r5B");
 
 console.log("script loaded");
 
