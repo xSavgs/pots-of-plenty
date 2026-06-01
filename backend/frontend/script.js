@@ -38,22 +38,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const products = {
         "white-hoodie": {
             title: "Hoodie — White",
-            price: 55,
+            price: 49.99,
             images: ["/assets/hoodie.jpg", "/assets/hoodieback.jpg"]
         },
         "black-hoodie": {
             title: "Hoodie — Black",
-            price: 55,
+            price: 49.99,
             images: ["/assets/hoodie2.jpg", "/assets/hoodie2back.jpg"]
         },
         "white-tshirt": {
             title: "T-Shirt — White",
-            price: 30,
+            price: 24.99,
             images: ["/assets/tshirt.jpg", "/assets/tshirtback.jpg"]
         },
         "black-tshirt": {
             title: "T-Shirt — Black",
-            price: 30,
+            price: 24.99,
             images: ["/assets/tshirt2.jpg", "/assets/tshirt2back.jpg"]
         }
     };
