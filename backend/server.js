@@ -61,16 +61,37 @@ app.post("/create-checkout-session", async (req, res) => {
             return res.status(400).json({ error: "Cart is empty or invalid" });
         }
 
+        const cartTotal = items.reduce(
+            (total, item) => total + Number(item.price),
+            0
+        );
+
         const line_items = items.map((item) => ({
             price_data: {
                 currency: "gbp",
                 product_data: {
-                    name: item.size ? `${item.name} (Size ${item.size})` : item.name
+                    name: item.size
+                        ? `${item.name} (Size ${item.size})`
+                        : item.name
                 },
                 unit_amount: Math.round(Number(item.price) * 100)
             },
             quantity: 1
         }));
+
+        // £4.99 delivery for orders under £70
+        if (cartTotal < 50) {
+            line_items.push({
+                price_data: {
+                    currency: "gbp",
+                    product_data: {
+                        name: "Delivery"
+                    },
+                    unit_amount: 495
+                },
+                quantity: 1
+            });
+        }
 
         const session = await stripe.checkout.sessions.create({
             mode: "payment",
