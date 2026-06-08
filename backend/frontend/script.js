@@ -36,14 +36,21 @@ document.addEventListener("DOMContentLoaded", () => {
     ========================= */
 
     const products = {
+        "premium-hoodie": {
+            title: "Premium Hoodie",
+            price: 49.99,
+            images: ["/assets/premium-hoodie.jpg", "/assets/premium-hoodie-back.jpg"],
+            description: "Crafted from heavyweight organic cotton with a brushed fleece interior. Softer, warmer, built to last."
+        },
+
         "white-hoodie": {
             title: "Hoodie — White",
-            price: 49.99,
+            price: 39.99,
             images: ["/assets/hoodie.jpg", "/assets/hoodieback.jpg"]
         },
         "black-hoodie": {
             title: "Hoodie — Black",
-            price: 49.99,
+            price: 39.99,
             images: ["/assets/hoodie2.jpg", "/assets/hoodie2back.jpg"]
         },
         "white-tshirt": {
