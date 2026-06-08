@@ -38,12 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const products = {
         "white-hoodie": {
             title: "Hoodie — White",
-            price: 39.99,
+            price: 34.99,
             images: ["/assets/hoodie.jpg", "/assets/hoodieback.jpg"]
         },
         "black-hoodie": {
             title: "Hoodie — Black",
-            price: 39.99,
+            price: 34.99,
             images: ["/assets/hoodie2.jpg", "/assets/hoodie2back.jpg"]
         },
         "white-tshirt": {
@@ -130,8 +130,66 @@ document.addEventListener("DOMContentLoaded", () => {
         const addBtn = document.getElementById("addToCartBtn");
 
         if (title) title.textContent = product.title;
-        if (price) price.textContent = `£${product.price.toFixed(2)}`;
 
+        let selectedPrice = product.price;
+
+        if (price) {
+            price.textContent = `£${selectedPrice.toFixed(2)}`;
+        }
+
+        const hoodieOptions = document.getElementById("hoodieOptions");
+        const versionSelect = document.getElementById("version");
+        const hoodieDescription = document.getElementById("hoodieDescription");
+
+        const isHoodie =
+            productId === "white-hoodie" ||
+            productId === "black-hoodie";
+
+        if (hoodieOptions) {
+
+            if (isHoodie) {
+
+                hoodieOptions.style.display = "block";
+
+                versionSelect.addEventListener("change", () => {
+
+                    if (versionSelect.value === "premium") {
+
+                        selectedPrice = 49.99;
+
+                        if (price) {
+                            price.textContent = "£49.99";
+                        }
+
+                        if (hoodieDescription) {
+                            hoodieDescription.textContent =
+                                "Premium heavyweight hoodie made from a softer fabric blend for greater comfort and warmth.";
+                        }
+
+                    } else {
+
+                        selectedPrice = 34.99;
+
+                        if (price) {
+                            price.textContent = "£34.99";
+                        }
+
+                        if (hoodieDescription) {
+                            hoodieDescription.textContent =
+                                "Durable everyday hoodie with a comfortable regular-weight fabric.";
+                        }
+                    }
+
+                });
+
+            } else {
+
+                hoodieOptions.style.display = "none";
+
+            }
+
+        }
+        
         /* =========================
            IMAGE SLIDER (FIXED)
         ========================= */
@@ -180,9 +238,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 const sizeEl = document.getElementById("size");
                 const size = sizeEl ? sizeEl.value : "M";
 
+                let finalPrice = product.price;
+                let version = "";
+
+                if (isHoodie) {
+
+                    version =
+                        document.getElementById("version")?.value ||
+                        "standard";
+
+                    finalPrice =
+                        version === "premium"
+                            ? 49.99
+                            : 34.99;
+                }
+
                 cart.push({
-                    name: product.title,
-                    price: product.price,
+                    name: isHoodie
+                        ? `${product.title} (${version === "premium" ? "Premium" : "Standard"})`
+                        : product.title,
+
+                    price: finalPrice,
                     size: size
                 });
 
