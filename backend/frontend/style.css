@@ -1360,3 +1360,20 @@ a:focus-visible {
     color: white;
     opacity: 1;
 }
+
+.premium-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 8px;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+
+    vertical-align: middle;
+}
