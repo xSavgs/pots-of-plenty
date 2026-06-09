@@ -188,23 +188,42 @@ function connectAISStream() {
     });
     
     aisStreamSocket.on('message', function(data) {
-        const aisMessage = JSON.parse(data);
-        
-        // Update latest vessel data
-        if (aisMessage.MessageType === "PositionReport") {
-            const meta = aisMessage.MetaData;
-            const position = aisMessage.Message.PositionReport;
-            
-            latestVesselData = {
-                latitude: position.Latitude,
-                longitude: position.Longitude,
-                timestamp: meta.TimeUTC || new Date().toISOString(),
-                sog: position.Sog, // Speed over ground
-                cog: position.Cog, // Course over ground
-                heading: position.TrueHeading
-            };
-            
-            console.log("Vessel position updated:", latestVesselData.latitude, latestVesselData.longitude);
+        try {
+            const aisMessage = JSON.parse(data);
+
+            if (aisMessage.MessageType === "PositionReport") {
+                const meta = aisMessage.MetaData;
+                const position = aisMessage.Message.PositionReport;
+
+                // Get the REAL AIS timestamp from the message
+                // AIS messages have their own timestamp in MetaData
+                let realTimestamp = new Date().toISOString(); // fallback
+
+                if (meta.TimeUTC) {
+                    realTimestamp = meta.TimeUTC;
+                } else if (position.Timestamp) {
+                    // Some AIS messages include a timestamp in the position report
+                    realTimestamp = position.Timestamp;
+                }
+
+                // Log the actual message time for debugging
+                console.log("AIS Message Time:", realTimestamp);
+                console.log("Server received at:", new Date().toISOString());
+
+                latestVesselData = {
+                    latitude: position.Latitude,
+                    longitude: position.Longitude,
+                    timestamp: realTimestamp,  // Use the REAL AIS timestamp
+                    sog: position.Sog,
+                    cog: position.Cog,
+                    heading: position.TrueHeading,
+                    receivedAt: new Date().toISOString() // Track when server got it
+                };
+
+                console.log("Vessel position updated - Position timestamp:", latestVesselData.timestamp);
+            }
+        } catch (err) {
+            console.error("Error parsing AIS message:", err);
         }
     });
     
@@ -223,14 +242,14 @@ function connectAISStream() {
 app.get("/api/vessel", async (req, res) => {
     try {
         // If we don't have a connection yet, start one
-        if (!aisStreamSocket || aisStreamSocket.readyState !== 1) {
+        if (!aisStreamSocket || aisStreamSocket.readyState !== WebSocket.OPEN) {
             connectAISStream();
-            // Return last known position or default
             return res.json({
                 success: true,
                 latitude: latestVesselData.latitude,
                 longitude: latestVesselData.longitude,
                 timestamp: latestVesselData.timestamp,
+                serverTime: new Date().toISOString(),
                 note: "Connecting to AISStream..."
             });
         }
@@ -239,7 +258,9 @@ app.get("/api/vessel", async (req, res) => {
             success: true,
             latitude: latestVesselData.latitude,
             longitude: latestVesselData.longitude,
-            timestamp: latestVesselData.timestamp,
+            timestamp: latestVesselData.timestamp,  // Real AIS time
+            serverTime: new Date().toISOString(),   // When server sent it
+            receivedAt: latestVesselData.receivedAt, // When server got the message
             sog: latestVesselData.sog,
             cog: latestVesselData.cog,
             heading: latestVesselData.heading

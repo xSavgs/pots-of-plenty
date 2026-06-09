@@ -311,6 +311,14 @@ body::before {
                 <div class="data-value" id="course">---</div>
             </div>
             <div class="data-item">
+                <div class="data-label">AIS TIMESTAMP</div>
+                <div class="data-value" id="aisTime">---</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">RECEIVED</div>
+                <div class="data-value" id="receivedTime">---</div>
+            </div>
+            <div class="data-item">
                 <div class="data-label">STATUS</div>
                 <div class="data-value" id="signalStatus">
                     <span class="signal-strength"></span> ACQUIRING
@@ -399,24 +407,29 @@ async function loadVessel() {
             document.getElementById("course").innerHTML = '---°<br><span style="font-size:11px;">--</span>';
         }
         
-        // Update last fix time - show seconds for more accuracy
-        const updateTime = new Date(data.timestamp);
+        const updateTime = new Date(data.timestamp);  // Real AIS time
+        const serverTime = new Date(data.serverTime || data.timestamp);  // Server time
+        const receivedTime = new Date(data.receivedAt || data.timestamp);  // When server got it
+
         const now = new Date();
-        const diffMs = now - updateTime;
-        const diffSecs = Math.floor(diffMs / 1000);
-        const diffMins = Math.floor(diffSecs / 60);
-        const diffHours = Math.floor(diffMins / 60);
+        const diffFromAIS = Math.floor((now - updateTime) / 1000);
+        const diffFromReceived = Math.floor((now - receivedTime) / 1000);
 
         let timeDisplay = '';
-        if (diffHours > 0) {
-            timeDisplay = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-        } else if (diffMins > 0) {
-            timeDisplay = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        if (diffFromAIS > 60) {
+            timeDisplay = `${Math.floor(diffFromAIS / 60)} minutes ${diffFromAIS % 60} seconds ago`;
         } else {
-            timeDisplay = `${diffSecs} second${diffSecs !== 1 ? 's' : ''} ago`;
+            timeDisplay = `${diffFromAIS} seconds ago`;
         }
 
-        document.getElementById("lastUpdate").innerHTML = `${updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">${timeDisplay}</span>`;
+        // Show both the AIS timestamp and when the server received it
+        document.getElementById("lastUpdate").innerHTML = `${updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">AIS data age: ${timeDisplay}</span>`;
+
+        // Optional: Add debug info to console
+        console.log(`AIS timestamp: ${updateTime.toLocaleTimeString()}`);
+        console.log(`Server received: ${receivedTime.toLocaleTimeString()}`);
+        console.log(`Current time: ${now.toLocaleTimeString()}`);
+        console.log(`Age: ${diffFromAIS} seconds`);
         
         // Update marker
         if(!marker){
