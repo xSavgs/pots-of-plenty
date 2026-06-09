@@ -242,3 +242,69 @@ body::before {
     margin-right: 5px;
     animation: pulse 2s ease-in-out infinite;
 }
+
+/* =========================
+   OVERRIDE MAIN SITE STYLES FOR TRACKING PAGE
+========================= */
+
+/* Remove the absolute positioned navbar from main site */
+.navbar {
+    position: relative !important;
+    top: 0 !important;
+    background: rgba(6, 18, 32, 0.95);
+    border-bottom: 1px solid #00e5ff;
+    margin-bottom: 20px;
+}
+
+/* Fix the body background for tracking page */
+body.tracking-page {
+    background: linear-gradient(135deg, #0a1a2e 0%, #061220 100%);
+}
+
+/* Ensure the tracker wrapper has proper spacing */
+.tracker-wrapper {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Fix any conflicting container styles */
+.section, .tracker-wrapper {
+    width: 95%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 0 20px 0;
+}
+
+/* Ensure the top bar doesn't interfere */
+.top-bar {
+    position: relative;
+    z-index: 100;
+    background: rgba(6, 18, 32, 0.95);
+    border-bottom: 1px solid #00e5ff;
+}
+
+/* Fix leaflet map z-index issues */
+#map {
+    z-index: 1;
+}
+
+.leaflet-control-container {
+    z-index: 2;
+}
+
+/* Make sure buttons are clickable */
+.radar-btn {
+    position: relative;
+    z-index: 10;
+}
+
+/* Fix popup styling */
+.leaflet-popup-content-wrapper {
+    background: #fff;
+    color: #061220;
+    border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+    background: #fff;
+}

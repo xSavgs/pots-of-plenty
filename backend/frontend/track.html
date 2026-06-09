@@ -6,16 +6,48 @@
 
         <title>POTS OF PLENTY - Radar Tracker</title>
 
+        <!-- Load styles in correct order -->
         <link rel="stylesheet" href="/style.css" />
-
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
         <link rel="stylesheet" href="trackingStyle.css" />
-        <link rel="stylesheet" href="style.css" />
+        
+        <style>
+            /* Additional inline fixes */
+            body.tracking-page {
+                overflow-x: hidden;
+            }
+            
+            /* Fix navbar positioning */
+            .navbar {
+                position: relative !important;
+                top: 0 !important;
+                background: rgba(6, 18, 32, 0.95) !important;
+                border-bottom: 1px solid #00e5ff !important;
+                margin-bottom: 0 !important;
+                padding: 15px 40px !important;
+            }
+            
+            /* Ensure the tracker wrapper starts below navbar */
+            .tracker-wrapper {
+                margin-top: 0;
+                padding-top: 20px;
+            }
+            
+            /* Fix any z-index issues with menu */
+            .side-menu, .cart-panel, .menu-overlay, .search-overlay {
+                z-index: 9999 !important;
+            }
+            
+            /* Make map container visible */
+            .map-container {
+                clear: both;
+            }
+        </style>
+        
         <script src="trackingScript.js" defer></script>
         <script src="script.js" defer></script>
     </head>
-    <body>
+    <body class="tracking-page">
         <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
 
         <!-- NAV -->
@@ -36,8 +68,9 @@
                 <button id="cartBtn" class="icon-btn">🛒</button>
             </div>
         </header>
+        
         <div class="tracker-wrapper">
-            <!-- Radar-style header - no spinning text -->
+            <!-- Radar-style header -->
             <div class="radar-header">
                 <div class="vessel-info">
                     <div class="vessel-name">⚓ POTS OF PLENTY</div>
@@ -82,14 +115,6 @@
                         <div class="data-value" id="course">---</div>
                     </div>
                     <div class="data-item">
-                        <div class="data-label">AIS TIMESTAMP</div>
-                        <div class="data-value" id="aisTime">---</div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">RECEIVED</div>
-                        <div class="data-value" id="receivedTime">---</div>
-                    </div>
-                    <div class="data-item">
                         <div class="data-label">STATUS</div>
                         <div class="data-value" id="signalStatus"><span class="signal-strength"></span> ACQUIRING</div>
                     </div>
@@ -98,5 +123,31 @@
         </div>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        
+        <script>
+            // Ensure menu and cart work properly on tracking page
+            document.addEventListener('DOMContentLoaded', function() {
+                // Fix any event listener issues
+                const menuBtn = document.getElementById('menuBtn');
+                const cartBtn = document.getElementById('cartBtn');
+                const searchBtn = document.getElementById('searchBtn');
+                
+                if (menuBtn) {
+                    menuBtn.addEventListener('click', function() {
+                        const sideMenu = document.getElementById('sideMenu');
+                        const menuOverlay = document.getElementById('menuOverlay');
+                        if (sideMenu) sideMenu.classList.add('open');
+                        if (menuOverlay) menuOverlay.classList.add('active');
+                    });
+                }
+                
+                if (cartBtn) {
+                    cartBtn.addEventListener('click', function() {
+                        const cartPanel = document.getElementById('cartPanel');
+                        if (cartPanel) cartPanel.classList.toggle('open');
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

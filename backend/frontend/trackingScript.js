@@ -1,3 +1,18 @@
+// Wait for DOM and Leaflet to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if map element exists and Leaflet is loaded
+    if (typeof L !== 'undefined' && document.getElementById('map')) {
+        initMap();
+    } else {
+        console.log('Waiting for Leaflet or map element...');
+    }
+});
+
+function initMap() {
+    // Your existing map initialization code here
+    // Move all your existing map code inside this function
+}
+
 // Custom radar-style boat icon
 const vesselIcon = L.divIcon({
     html: '<div style="font-size: 32px; filter: drop-shadow(0 0 3px #00e5ff);">⛵</div>',
