@@ -17,25 +17,6 @@
     <body class="tracking-page">
         <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
 
-        <!-- NAV -->
-        <header class="navbar">
-            <div class="nav-left">
-                <button id="menuBtn" class="icon-btn">☰</button>
-                <button id="searchBtn" class="icon-btn">⌕</button>
-            </div>
-
-            <div class="logo">
-                <a href="/">
-                    <img src="/assets/logo.png" alt="Logo" />
-                </a>
-            </div>
-
-            <div class="nav-right">
-                <button id="userBtn" class="icon-btn">👤</button>
-                <button id="cartBtn" class="icon-btn">🛒</button>
-            </div>
-        </header>
-
         <div class="tracker-wrapper">
             <!-- Radar-style header -->
             <div class="radar-header">
@@ -90,7 +71,7 @@
         </div>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        
+
         <!-- FOOTER -->
         <footer class="footer">
             <div class="footer-grid">
@@ -148,48 +129,5 @@
 
             <div class="footer-bottom">© Pots of Plenty 2026</div>
         </footer>
-
-        <div class="side-menu" id="sideMenu">
-            <div class="menu-header">
-                <h2>Pots of Plenty</h2>
-                <button class="close-menu" id="closeMenu">×</button>
-            </div>
-
-            <nav class="menu-links">
-                <a href="/">Home</a>
-                <a href="/shop">Shop</a>
-                <a href="/about">About</a>
-                <a href="/contact">Contact</a>
-            </nav>
-
-            <div class="menu-footer">
-                <p>⚓ Scarborough Harbour</p>
-            </div>
-        </div>
-
-        <div class="menu-overlay" id="menuOverlay"></div>
-
-        <div class="cart-panel" id="cartPanel">
-            <div class="cart-header">
-                <h2>Your Cart</h2>
-                <button class="close-cart" id="closeCart">×</button>
-            </div>
-
-            <div class="cart-items" id="cartItems">
-                <div class="empty-cart">Your cart is empty.</div>
-            </div>
-
-            <div class="cart-footer">
-                <div class="cart-total" id="cartTotal">Total: £0.00</div>
-                <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
-            </div>
-        </div>
-
-        <div class="search-overlay" id="searchBar">
-            <div class="search-box">
-                <input type="text" placeholder="Search products..." id="searchInput" />
-                <button class="search-submit" id="searchSubmit">→</button>
-            </div>
-        </div>
     </body>
 </html>
