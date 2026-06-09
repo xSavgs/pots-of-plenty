@@ -11,9 +11,31 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
         <link rel="stylesheet" href="trackingStyle.css" />
+        <link rel="stylesheet" href="style.css" />
         <script src="trackingScript.js" defer></script>
+        <script src="script.js" defer></script>
     </head>
     <body>
+        <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
+
+        <!-- NAV -->
+        <header class="navbar">
+            <div class="nav-left">
+                <button id="menuBtn" class="icon-btn">☰</button>
+                <button id="searchBtn" class="icon-btn">⌕</button>
+            </div>
+
+            <div class="logo">
+                <a href="/">
+                    <img src="/assets/logo.png" alt="Logo" />
+                </a>
+            </div>
+
+            <div class="nav-right">
+                <button id="userBtn" class="icon-btn">👤</button>
+                <button id="cartBtn" class="icon-btn">🛒</button>
+            </div>
+        </header>
         <div class="tracker-wrapper">
             <!-- Radar-style header - no spinning text -->
             <div class="radar-header">
