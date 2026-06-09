@@ -160,10 +160,9 @@ let latestVesselData = {
 
 // Function to connect to AISStream WebSocket
 function connectAISStream() {
-    const AIS_USERNAME = process.env.AISSTREAM_USERNAME;
     const AIS_API_KEY = process.env.AISSTREAM_API_KEY;
     
-    if (!AIS_USERNAME || !AIS_API_KEY) {
+    if (!AIS_API_KEY) {
         console.error("AISStream credentials missing!");
         return;
     }
