@@ -399,10 +399,24 @@ async function loadVessel() {
             document.getElementById("course").innerHTML = '---°<br><span style="font-size:11px;">--</span>';
         }
         
-        // Update last fix time
+        // Update last fix time - show seconds for more accuracy
         const updateTime = new Date(data.timestamp);
-        const timeAgo = Math.floor((Date.now() - updateTime) / 1000 / 60);
-        document.getElementById("lastUpdate").innerHTML = `${updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">${timeAgo} minutes ago</span>`;
+        const now = new Date();
+        const diffMs = now - updateTime;
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
+        const diffHours = Math.floor(diffMins / 60);
+
+        let timeDisplay = '';
+        if (diffHours > 0) {
+            timeDisplay = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        } else if (diffMins > 0) {
+            timeDisplay = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        } else {
+            timeDisplay = `${diffSecs} second${diffSecs !== 1 ? 's' : ''} ago`;
+        }
+
+        document.getElementById("lastUpdate").innerHTML = `${updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">${timeDisplay}</span>`;
         
         // Update marker
         if(!marker){
