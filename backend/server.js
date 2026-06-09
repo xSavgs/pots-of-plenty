@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import Stripe from "stripe";
 import path from "path";
 import { fileURLToPath } from "url";
+import fetch from "node-fetch";
 
 /* =========================
    ES MODULE FIX
@@ -133,7 +134,7 @@ console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
-const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms"];
+const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "test"];
 
 pages.forEach((page) => {
     app.get(`/${page}`, (req, res) => {
@@ -143,6 +144,132 @@ pages.forEach((page) => {
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
+});
+
+/* =================== */
+/* MARITIME DATA STUFF */
+/* =================== */
+
+// Keep track of the AISStream connection
+let aisStreamSocket = null;
+let latestVesselData = {
+    latitude: 54.2798,
+    longitude: -0.4044,
+    timestamp: new Date().toISOString()
+};
+
+// Function to connect to AISStream WebSocket
+function connectAISStream() {
+    const AIS_USERNAME = process.env.AISSTREAM_USERNAME;
+    const AIS_API_KEY = process.env.AISSTREAM_API_KEY;
+    
+    if (!AIS_USERNAME || !AIS_API_KEY) {
+        console.error("AISStream credentials missing!");
+        return;
+    }
+    
+    const WebSocket = require('ws');
+    const wsUrl = `wss://stream.aisstream.io/v1/stream`;
+    
+    const subscriptionMessage = {
+        APIKey: AIS_API_KEY,
+        BoundingBoxes: [[
+            [-90, -180], // Bottom-left (lat, lon)
+            [90, 180]    // Top-right (lat, lon)
+        ]],
+        FiltersShipMMSI: ["235059314"], // Filter for POTS OF PLENTY only
+        MessageType: ["PositionReport"]
+    };
+    
+    aisStreamSocket = new WebSocket(wsUrl);
+    
+    aisStreamSocket.on('open', function() {
+        console.log('Connected to AISStream');
+        aisStreamSocket.send(JSON.stringify(subscriptionMessage));
+    });
+    
+    aisStreamSocket.on('message', function(data) {
+        const aisMessage = JSON.parse(data);
+        
+        // Update latest vessel data
+        if (aisMessage.MessageType === "PositionReport") {
+            const meta = aisMessage.MetaData;
+            const position = aisMessage.Message.PositionReport;
+            
+            latestVesselData = {
+                latitude: position.Latitude,
+                longitude: position.Longitude,
+                timestamp: meta.TimeUTC || new Date().toISOString(),
+                sog: position.Sog, // Speed over ground
+                cog: position.Cog, // Course over ground
+                heading: position.TrueHeading
+            };
+            
+            console.log("Vessel position updated:", latestVesselData.latitude, latestVesselData.longitude);
+        }
+    });
+    
+    aisStreamSocket.on('error', function(error) {
+        console.error('AISStream WebSocket error:', error);
+        setTimeout(connectAISStream, 30000); // Reconnect after 30 seconds
+    });
+    
+    aisStreamSocket.on('close', function() {
+        console.log('AISStream connection closed, reconnecting...');
+        setTimeout(connectAISStream, 5000); // Reconnect after 5 seconds
+    });
+}
+
+// Endpoint to get latest vessel position
+app.get("/api/vessel", async (req, res) => {
+    try {
+        // If we don't have a connection yet, start one
+        if (!aisStreamSocket || aisStreamSocket.readyState !== 1) {
+            connectAISStream();
+            // Return last known position or default
+            return res.json({
+                success: true,
+                latitude: latestVesselData.latitude,
+                longitude: latestVesselData.longitude,
+                timestamp: latestVesselData.timestamp,
+                note: "Connecting to AISStream..."
+            });
+        }
+        
+        res.json({
+            success: true,
+            latitude: latestVesselData.latitude,
+            longitude: latestVesselData.longitude,
+            timestamp: latestVesselData.timestamp,
+            sog: latestVesselData.sog,
+            cog: latestVesselData.cog,
+            heading: latestVesselData.heading
+        });
+        
+    } catch(err) {
+        console.error("AISStream error:", err);
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Start AISStream connection when server starts
+connectAISStream();
+
+app.get("/test", (req,res)=>{
+
+    const password = req.query.password;
+
+    if(password !== process.env.TEST_PASSWORD){
+        return res.status(403).send("Forbidden");
+    }
+
+    res.sendFile(
+        path.join(frontendPath,"test.html")
+    );
+
 });
 
 /* =========================

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vessel Tracker Test</title>
+
+<link rel="stylesheet" href="/style.css">
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+
+body{
+    background:#020816;
+    color:white;
+    font-family:Inter,sans-serif;
+}
+
+.tracker-wrapper{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
+    padding:40px 0;
+}
+
+#map{
+    height:700px;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+.vessel-card{
+    margin-bottom:25px;
+    padding:20px;
+    background:rgba(255,255,255,0.05);
+    border-radius:16px;
+}
+
+.vessel-card h2{
+    margin-bottom:10px;
+}
+
+.status{
+    color:#8aff8a;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="tracker-wrapper">
+
+    <div class="vessel-card">
+
+        <h2>POTS OF PLENTY</h2>
+
+        <p>MMSI: 235059314</p>
+
+        <p id="lastUpdate">
+            Waiting for AIS data...
+        </p>
+
+        <p class="status">
+            Live tracking enabled
+        </p>
+
+    </div>
+
+    <div id="map"></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const map = L.map("map").setView([54.2798, -0.4044], 10);
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        attribution:"© OpenStreetMap"
+    }
+).addTo(map);
+
+let marker = null;
+
+async function loadVessel() {
+
+    try {
+
+        const res = await fetch("/api/vessel");
+
+        const data = await res.json();
+
+        if(!data.success){
+            return;
+        }
+
+        const lat = data.latitude;
+        const lon = data.longitude;
+
+        if(!marker){
+
+            marker = L.marker([lat, lon])
+            .addTo(map)
+            .bindPopup("POTS OF PLENTY");
+
+        } else {
+
+            marker.setLatLng([lat, lon]);
+
+        }
+
+        map.setView([lat, lon], 12);
+
+        document.getElementById("lastUpdate").innerHTML =
+            `
+            Last update:
+            ${new Date(data.timestamp).toLocaleString()}
+            <br>
+            Position:
+            ${lat.toFixed(5)},
+            ${lon.toFixed(5)}
+            `;
+
+    } catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+loadVessel();
+
+setInterval(loadVessel, 60000);
+
+</script>
+
+</body>
+</html>
