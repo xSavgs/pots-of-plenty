@@ -251,7 +251,6 @@ body::before {
 .navbar {
     position: relative !important;
     top: 0 !important;
-    background: rgba(6, 18, 32, 0.95);
     border-bottom: 1px solid #00e5ff;
     margin-bottom: 20px;
 }

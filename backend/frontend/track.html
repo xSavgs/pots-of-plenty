@@ -10,40 +10,7 @@
         <link rel="stylesheet" href="/style.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="trackingStyle.css" />
-        
-        <style>
-            /* Additional inline fixes */
-            body.tracking-page {
-                overflow-x: hidden;
-            }
-            
-            /* Fix navbar positioning */
-            .navbar {
-                position: relative !important;
-                top: 0 !important;
-                background: rgba(6, 18, 32, 0.95) !important;
-                border-bottom: 1px solid #00e5ff !important;
-                margin-bottom: 0 !important;
-                padding: 15px 40px !important;
-            }
-            
-            /* Ensure the tracker wrapper starts below navbar */
-            .tracker-wrapper {
-                margin-top: 0;
-                padding-top: 20px;
-            }
-            
-            /* Fix any z-index issues with menu */
-            .side-menu, .cart-panel, .menu-overlay, .search-overlay {
-                z-index: 9999 !important;
-            }
-            
-            /* Make map container visible */
-            .map-container {
-                clear: both;
-            }
-        </style>
-        
+
         <script src="trackingScript.js" defer></script>
         <script src="script.js" defer></script>
     </head>
@@ -68,7 +35,7 @@
                 <button id="cartBtn" class="icon-btn">🛒</button>
             </div>
         </header>
-        
+
         <div class="tracker-wrapper">
             <!-- Radar-style header -->
             <div class="radar-header">
@@ -124,30 +91,105 @@
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         
-        <script>
-            // Ensure menu and cart work properly on tracking page
-            document.addEventListener('DOMContentLoaded', function() {
-                // Fix any event listener issues
-                const menuBtn = document.getElementById('menuBtn');
-                const cartBtn = document.getElementById('cartBtn');
-                const searchBtn = document.getElementById('searchBtn');
-                
-                if (menuBtn) {
-                    menuBtn.addEventListener('click', function() {
-                        const sideMenu = document.getElementById('sideMenu');
-                        const menuOverlay = document.getElementById('menuOverlay');
-                        if (sideMenu) sideMenu.classList.add('open');
-                        if (menuOverlay) menuOverlay.classList.add('active');
-                    });
-                }
-                
-                if (cartBtn) {
-                    cartBtn.addEventListener('click', function() {
-                        const cartPanel = document.getElementById('cartPanel');
-                        if (cartPanel) cartPanel.classList.toggle('open');
-                    });
-                }
-            });
-        </script>
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-grid">
+                <div>
+                    <a href="/index">
+                        <img src="assets/logo.png" alt="" class="footer-logo" />
+                    </a>
+
+                    <p>Authentic coastal clothing and gear, inspired by life on the water.</p>
+                </div>
+
+                <div>
+                    <h4>SHOP</h4>
+
+                    <ul>
+                        <li><a href="/shop">All Products</a></li>
+                        <li><a href="/shop?category=hoodies">Hoodies</a></li>
+                        <li><a href="/shop?category=tshirts">T-Shirts</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4>INFO</h4>
+
+                    <ul>
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/shipping">Shipping</a></li>
+                        <li><a href="/refund">Returns</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4>CUSTOMER CARE</h4>
+
+                    <ul>
+                        <li><a href="/faq">FAQs</a></li>
+                        <li><a href="/refund">Returns Policy</a></li>
+                        <li><a href="/terms">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4>JOIN THE CREW</h4>
+
+                    <p>Get updates, new drops and exclusive offers.</p>
+
+                    <div class="newsletter">
+                        <input type="email" placeholder="Enter your email" />
+
+                        <button>→</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">© Pots of Plenty 2026</div>
+        </footer>
+
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <h2>Pots of Plenty</h2>
+                <button class="close-menu" id="closeMenu">×</button>
+            </div>
+
+            <nav class="menu-links">
+                <a href="/">Home</a>
+                <a href="/shop">Shop</a>
+                <a href="/about">About</a>
+                <a href="/contact">Contact</a>
+            </nav>
+
+            <div class="menu-footer">
+                <p>⚓ Scarborough Harbour</p>
+            </div>
+        </div>
+
+        <div class="menu-overlay" id="menuOverlay"></div>
+
+        <div class="cart-panel" id="cartPanel">
+            <div class="cart-header">
+                <h2>Your Cart</h2>
+                <button class="close-cart" id="closeCart">×</button>
+            </div>
+
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">Your cart is empty.</div>
+            </div>
+
+            <div class="cart-footer">
+                <div class="cart-total" id="cartTotal">Total: £0.00</div>
+                <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
+            </div>
+        </div>
+
+        <div class="search-overlay" id="searchBar">
+            <div class="search-box">
+                <input type="text" placeholder="Search products..." id="searchInput" />
+                <button class="search-submit" id="searchSubmit">→</button>
+            </div>
+        </div>
     </body>
 </html>
