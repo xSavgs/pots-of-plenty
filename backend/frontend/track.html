@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Vessel Tracker Test</title>
+<title>POTS OF PLENTY - Radar Tracker</title>
 
 <link rel="stylesheet" href="/style.css">
 
@@ -14,134 +14,517 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-body{
-    background:#020816;
-    color:white;
-    font-family:Inter,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.tracker-wrapper{
-    width:95%;
-    max-width:1400px;
-    margin:auto;
-    padding:40px 0;
+body {
+    background: radial-gradient(ellipse at center, #0a1128 0%, #020816 100%);
+    color: #00ffcc;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-#map{
-    height:700px;
-    border-radius:16px;
-    overflow:hidden;
+/* Radar scan line effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 204, 0.03) 0px,
+        rgba(0, 255, 204, 0.03) 2px,
+        transparent 2px,
+        transparent 6px
+    );
+    pointer-events: none;
+    z-index: 1;
 }
 
-.vessel-card{
-    margin-bottom:25px;
-    padding:20px;
-    background:rgba(255,255,255,0.05);
-    border-radius:16px;
+/* Grid overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 255, 204, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 1;
 }
 
-.vessel-card h2{
-    margin-bottom:10px;
+.tracker-wrapper {
+    width: 95%;
+    max-width: 1600px;
+    margin: auto;
+    padding: 20px 0;
+    position: relative;
+    z-index: 2;
 }
 
-.status{
-    color:#8aff8a;
+/* Radar-style header */
+.radar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: rgba(0, 20, 30, 0.8);
+    border: 1px solid #00ffcc;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
 }
 
+.vessel-info {
+    display: flex;
+    gap: 30px;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.vessel-name {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px #00ffcc;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; text-shadow: 0 0 10px #00ffcc; }
+    50% { opacity: 0.8; text-shadow: 0 0 20px #00ffcc; }
+}
+
+.mmsi {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.status-badge {
+    display: flex;
+    gap: 15px;
+}
+
+.status {
+    color: #00ffcc;
+    animation: blink 1.5s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.radar-sweep {
+    font-size: 20px;
+    animation: spin 4s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Map container with radar styling */
+.map-container {
+    position: relative;
+    border: 3px solid #00ffcc;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
+    margin-bottom: 20px;
+}
+
+#map {
+    height: 600px;
+    background: #000814 !important;
+}
+
+/* Custom Leaflet map styling */
+.leaflet-tile-pane {
+    filter: brightness(0.7) contrast(1.2) hue-rotate(160deg);
+}
+
+.leaflet-control-zoom {
+    filter: drop-shadow(0 0 5px #00ffcc);
+}
+
+.leaflet-control-zoom a {
+    background: rgba(0, 20, 30, 0.9) !important;
+    color: #00ffcc !important;
+    border-color: #00ffcc !important;
+}
+
+/* Data panel */
+.data-panel {
+    background: rgba(0, 20, 30, 0.9);
+    border: 1px solid #00ffcc;
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.data-item {
+    border-left: 3px solid #00ffcc;
+    padding-left: 15px;
+}
+
+.data-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.data-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00ffcc;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+}
+
+/* Button controls */
+.control-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.radar-btn {
+    background: rgba(0, 20, 30, 0.9);
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    padding: 10px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    backdrop-filter: blur(5px);
+}
+
+.radar-btn:hover {
+    background: #00ffcc;
+    color: #020816;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Compass rose */
+.compass {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 20, 30, 0.8);
+    border: 1px solid #00ffcc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    pointer-events: none;
+}
+
+.compass::before {
+    content: '⬆️';
+    font-size: 24px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .radar-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .vessel-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .vessel-name {
+        font-size: 20px;
+    }
+    
+    .data-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading animation */
+@keyframes radarPing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 255, 204, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 204, 0);
+    }
+}
+
+.loading-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #00ffcc;
+    border-radius: 50%;
+    animation: radarPing 1.5s infinite;
+    margin-right: 5px;
+}
 </style>
 
 </head>
 <body>
 
 <div class="tracker-wrapper">
-
-    <div class="vessel-card">
-
-        <h2>POTS OF PLENTY</h2>
-
-        <p>MMSI: 235059314</p>
-
-        <p id="lastUpdate">
-            Waiting for AIS data...
-        </p>
-
-        <p class="status">
-            Live tracking enabled
-        </p>
-
+    <!-- Radar-style header -->
+    <div class="radar-header">
+        <div class="vessel-info">
+            <div class="vessel-name">
+                <span class="radar-sweep">🔄</span> POTS OF PLENTY
+            </div>
+            <div class="mmsi">MMSI: 235059314</div>
+            <div class="status-badge">
+                <div class="status">● LIVE TRACKING</div>
+            </div>
+        </div>
+        <div class="radar-sweep">📡 SCANNING</div>
     </div>
 
-    <div id="map"></div>
+    <!-- Control buttons -->
+    <div class="control-buttons">
+        <button class="radar-btn" onclick="centerOnVessel()">🎯 CENTER ON TARGET</button>
+        <button class="radar-btn" onclick="refreshData()">🔄 FORCE SCAN</button>
+        <button class="radar-btn" onclick="toggleRadarMode()">📡 RADAR MODE</button>
+    </div>
 
+    <!-- Map container with compass -->
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="compass"></div>
+    </div>
+
+    <!-- Data panel -->
+    <div class="data-panel">
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="data-label">LAST FIX</div>
+                <div class="data-value" id="lastUpdate">WAITING FOR SIGNAL...</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">POSITION</div>
+                <div class="data-value" id="position">---</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">SPEED</div>
+                <div class="data-value" id="speed">---</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">COURSE</div>
+                <div class="data-value" id="course">---</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">STATUS</div>
+                <div class="data-value" id="signalStatus">
+                    <span class="loading-dot"></span> ACQUIRING
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+// Custom radar-style boat icon
+const vesselIcon = L.divIcon({
+    html: '<div style="font-size: 32px; filter: drop-shadow(0 0 5px #00ffcc);">⛵</div>',
+    iconSize: [32, 32],
+    className: 'vessel-marker'
+});
 
-const map = L.map("map").setView([54.2798, -0.4044], 10);
+const map = L.map("map", {
+    zoomControl: true,
+    fadeAnimation: true,
+    zoomAnimation: true
+}).setView([54.2798, -0.4044], 14);
 
+// Dark radar-style tile layer
 L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     {
-        attribution:"© OpenStreetMap"
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 19
     }
 ).addTo(map);
 
 let marker = null;
+let radarCircle = null;
+let radarMode = false;
+
+// Function to add radar range rings
+function updateRadarRings(centerLat, centerLon) {
+    if (radarCircle) {
+        map.removeLayer(radarCircle);
+    }
+    
+    radarCircle = L.circle([centerLat, centerLon], {
+        color: '#00ffcc',
+        fillColor: 'transparent',
+        weight: 1,
+        opacity: 0.3,
+        radius: 500 // 500 meters range
+    }).addTo(map);
+}
 
 async function loadVessel() {
-
     try {
-
         const res = await fetch("/api/vessel");
-
         const data = await res.json();
-
+        
         if(!data.success){
+            document.getElementById("signalStatus").innerHTML = '<span style="color: #ff4444;">● SIGNAL LOST</span>';
             return;
         }
 
         const lat = data.latitude;
         const lon = data.longitude;
-
-        if(!marker){
-
-            marker = L.marker([lat, lon])
-            .addTo(map)
-            .bindPopup("POTS OF PLENTY");
-
+        
+        // Update signal status
+        document.getElementById("signalStatus").innerHTML = '<span style="color: #00ffcc;">● SIGNAL ACQUIRED</span>';
+        
+        // Update position display
+        document.getElementById("position").innerHTML = `${lat.toFixed(6)}<br>${lon.toFixed(6)}`;
+        
+        // Update speed and course if available
+        if (data.sog !== undefined) {
+            const speedKnots = data.sog;
+            const speedKmph = (speedKnots * 1.852).toFixed(1);
+            document.getElementById("speed").innerHTML = `${speedKnots.toFixed(1)} kn<br><span style="font-size:12px;">${speedKmph} km/h</span>`;
         } else {
-
-            marker.setLatLng([lat, lon]);
-
+            document.getElementById("speed").innerHTML = '---';
         }
-
-        map.setView([lat, lon], 12);
-
-        document.getElementById("lastUpdate").innerHTML =
-            `
-            Last update:
-            ${new Date(data.timestamp).toLocaleString()}
-            <br>
-            Position:
-            ${lat.toFixed(5)},
-            ${lon.toFixed(5)}
-            `;
-
+        
+        if (data.cog !== undefined) {
+            document.getElementById("course").innerHTML = `${data.cog.toFixed(0)}°<br><span style="font-size:12px;">${getCardinalDirection(data.cog)}</span>`;
+        } else {
+            document.getElementById("course").innerHTML = '---';
+        }
+        
+        // Update last fix time
+        const updateTime = new Date(data.timestamp);
+        const timeAgo = Math.floor((Date.now() - updateTime) / 1000 / 60);
+        document.getElementById("lastUpdate").innerHTML = `${updateTime.toLocaleTimeString()}<br><span style="font-size:12px;">${timeAgo} min ago</span>`;
+        
+        // Update marker
+        if(!marker){
+            marker = L.marker([lat, lon], { icon: vesselIcon })
+            .addTo(map)
+            .bindPopup(`
+                <div style="font-family: monospace; background: #020816; color: #00ffcc;">
+                    <b>⚓ POTS OF PLENTY</b><br>
+                    ${data.sog ? `Speed: ${data.sog.toFixed(1)} kn<br>` : ''}
+                    ${data.cog ? `Course: ${data.cog.toFixed(0)}°<br>` : ''}
+                    Last update: ${updateTime.toLocaleTimeString()}
+                </div>
+            `);
+        } else {
+            marker.setLatLng([lat, lon]);
+            marker.openPopup();
+        }
+        
+        // Update radar rings if in radar mode
+        if (radarMode) {
+            updateRadarRings(lat, lon);
+        }
+        
+        map.setView([lat, lon], 14);
+        
     } catch(err){
-
         console.error(err);
-
+        document.getElementById("signalStatus").innerHTML = '<span style="color: #ff4444;">● ERROR</span>';
     }
-
 }
 
+// Helper function for cardinal directions
+function getCardinalDirection(degrees) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(degrees / 22.5) % 16;
+    return directions[index];
+}
+
+function centerOnVessel() {
+    if (marker) {
+        const pos = marker.getLatLng();
+        map.setView(pos, 15);
+        marker.openPopup();
+    }
+}
+
+function refreshData() {
+    loadVessel();
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '🔄 SCANNING...';
+    setTimeout(() => {
+        btn.textContent = originalText;
+    }, 1000);
+}
+
+function toggleRadarMode() {
+    radarMode = !radarMode;
+    if (radarMode && marker) {
+        const pos = marker.getLatLng();
+        updateRadarRings(pos.lat, pos.lng);
+    } else if (radarCircle) {
+        map.removeLayer(radarCircle);
+        radarCircle = null;
+    }
+}
+
+// Load initial data
 loadVessel();
 
-setInterval(loadVessel, 60000);
+// Update every 30 seconds for more responsive feel
+setInterval(loadVessel, 30000);
 
+// Add a radar sweep effect on map load
+setTimeout(() => {
+    if (marker) {
+        centerOnVessel();
+    }
+}, 1000);
 </script>
 
 </body>
