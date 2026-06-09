@@ -134,7 +134,7 @@ console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
-const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "test"];
+const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track"];
 
 pages.forEach((page) => {
     app.get(`/${page}`, (req, res) => {
@@ -256,20 +256,6 @@ app.get("/api/vessel", async (req, res) => {
 
 // Start AISStream connection when server starts
 connectAISStream();
-
-app.get("/test", (req,res)=>{
-
-    const password = req.query.password;
-
-    if(password !== process.env.TEST_PASSWORD){
-        return res.status(403).send("Forbidden");
-    }
-
-    res.sendFile(
-        path.join(frontendPath,"test.html")
-    );
-
-});
 
 /* =========================
    START SERVER
