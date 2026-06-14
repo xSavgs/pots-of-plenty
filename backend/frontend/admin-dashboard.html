@@ -5,40 +5,9 @@
     <title>Admin Dashboard — Pots of Plenty</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/admin.css">
-    <script src="/admin-shell.js" defer></script>
-
-    <script>
-        const adminToken =
-            localStorage.getItem("adminToken") ||
-            localStorage.getItem("admin_token");
-
-        if (!adminToken) {
-            window.location.href = "/admin";
-        }
-
-        window.adminFetch = window.adminFetch || async function adminFetch(url, options = {}) {
-            const headers = {
-                ...(options.headers || {}),
-                Authorization: `Bearer ${adminToken}`
-            };
-
-            const res = await fetch(url, {
-                ...options,
-                headers
-            });
-
-            if (res.status === 401) {
-                localStorage.removeItem("adminToken");
-                localStorage.removeItem("admin_token");
-                window.location.href = "/admin";
-                return null;
-            }
-
-            return res;
-        };
-    </script>
+    <link rel="stylesheet" href="/style.css?v=10">
+    <link rel="stylesheet" href="/admin.css?v=10">
+    <script src="/admin-shell.js?v=10"></script>
 </head>
 
 <body>
