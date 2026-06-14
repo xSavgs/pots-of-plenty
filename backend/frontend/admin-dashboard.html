@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Pots of Plenty</title>
+
+```
+<link rel="stylesheet" href="/style.css">
+
+<script>
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+        window.location.href = "/admin";
+    }
+</script>
+```
+
+</head>
+
+<body>
+
+<div class="top-bar">
+    ⚓ POTS OF PLENTY ADMIN PANEL
+</div>
+
+<section class="section" style="padding:60px 0;">
+
+```
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;">
+    <div>
+        <h1 style="font-size:48px;">Dashboard</h1>
+        <p style="opacity:.7;">Manage your store and vessel tracking.</p>
+    </div>
+
+    <button
+        id="logoutBtn"
+        class="hero-btn"
+    >
+        LOGOUT
+    </button>
+</div>
+
+<div class="products-grid">
+
+    <div class="product-card">
+        <div style="padding:30px;">
+            <h3>Orders</h3>
+            <p>
+                View customer orders and Stripe payments.
+            </p>
+
+            <a href="/admin-orders" class="hero-btn">
+                OPEN
+            </a>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div style="padding:30px;">
+            <h3>Vessel Tracking</h3>
+            <p>
+                Monitor POTS OF PLENTY live AIS position.
+            </p>
+
+            <a href="/track" class="hero-btn">
+                OPEN
+            </a>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div style="padding:30px;">
+            <h3>Products</h3>
+            <p>
+                Manage hoodies, t-shirts and pricing.
+            </p>
+
+            <a href="#" class="hero-btn">
+                COMING SOON
+            </a>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div style="padding:30px;">
+            <h3>Site Status</h3>
+
+            <p id="serverStatus">
+                Checking...
+            </p>
+
+            <button
+                class="hero-btn"
+                onclick="checkStatus()"
+            >
+                REFRESH
+            </button>
+        </div>
+    </div>
+
+</div>
+```
+
+</section>
+
+<script>
+
+document
+.getElementById("logoutBtn")
+.addEventListener("click", () => {
+
+    localStorage.removeItem("adminToken");
+
+    window.location.href = "/admin";
+});
+
+async function checkStatus() {
+
+    const status =
+        document.getElementById("serverStatus");
+
+    try {
+
+        const res =
+            await fetch("/api/vessel");
+
+        if (res.ok) {
+
+            status.innerHTML =
+                "✅ Server Online";
+
+        } else {
+
+            status.innerHTML =
+                "⚠️ API Error";
+        }
+
+    } catch {
+
+        status.innerHTML =
+            "❌ Offline";
+    }
+}
+
+checkStatus();
+
+</script>
+
+</body>
+</html>

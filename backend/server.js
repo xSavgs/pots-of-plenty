@@ -156,7 +156,7 @@ console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
-const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track", "admin"];
+const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track", "admin", "admin-dashboard"];
 
 pages.forEach((page) => {
     app.get(`/${page}`, (req, res) => {
