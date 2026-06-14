@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Orders — Pots of Plenty</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section class="section" style="padding:60px 0;">
+    <h1>Orders</h1>
+    <p style="opacity:.7;margin-bottom:30px;">Recent Stripe checkout sessions.</p>
+
+    <a href="/admin-dashboard" class="outline-btn">← Back to Dashboard</a>
+
+    <div id="orders" style="margin-top:40px;"></div>
+</section>
+
+<script>
+const token = localStorage.getItem("adminToken");
+
+if (!token) {
+    window.location.href = "/admin";
+}
+
+async function loadOrders() {
+    const container = document.getElementById("orders");
+
+    try {
+        const res = await fetch("/api/admin/orders", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            container.innerHTML = "<p>Could not load orders.</p>";
+            return;
+        }
+
+        if (data.orders.length === 0) {
+            container.innerHTML = "<p>No orders yet.</p>";
+            return;
+        }
+
+        container.innerHTML = data.orders.map(order => `
+            <div class="product-card" style="padding:25px;margin-bottom:20px;">
+                <h3>${order.customer_name}</h3>
+                <p>Email: ${order.customer_email}</p>
+                <p>Phone: ${order.phone}</p>
+                <p>Status: ${order.status}</p>
+                <p>Total: £${(order.amount_total / 100).toFixed(2)}</p>
+                <p>Date: ${new Date(order.created * 1000).toLocaleString()}</p>
+
+                <h4 style="margin-top:15px;">Items</h4>
+                ${order.items.map(item => `
+                    <p>${item.quantity} × ${item.name} — £${(item.amount / 100).toFixed(2)}</p>
+                `).join("")}
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = "<p>Order API failed.</p>";
+    }
+}
+
+loadOrders();
+</script>
+
+</body>
+</html>

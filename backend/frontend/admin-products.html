@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Products — Pots of Plenty</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section class="section" style="padding:60px 0;">
+    <h1>Products</h1>
+    <p style="opacity:.7;margin-bottom:30px;">Current store product setup.</p>
+
+    <a href="/admin-dashboard" class="outline-btn">← Back to Dashboard</a>
+
+    <div id="products" class="products-grid" style="margin-top:40px;"></div>
+</section>
+
+<script>
+const token = localStorage.getItem("adminToken");
+
+if (!token) {
+    window.location.href = "/admin";
+}
+
+async function loadProducts() {
+    const container = document.getElementById("products");
+
+    const res = await fetch("/api/admin/products", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+        container.innerHTML = "<p>Could not load products.</p>";
+        return;
+    }
+
+    container.innerHTML = data.products.map(product => `
+        <div class="product-card" style="padding:25px;">
+            <h3>${product.name}</h3>
+
+            ${
+                product.premium
+                ? `<p>Standard: £${product.standard.toFixed(2)}</p>
+                   <p>Premium: £${product.premium.toFixed(2)}</p>`
+                : `<p>Price: £${product.price.toFixed(2)}</p>`
+            }
+
+            <p>Sizes: ${product.sizes.join(", ")}</p>
+        </div>
+    `).join("");
+}
+
+loadProducts();
+</script>
+
+</body>
+</html>

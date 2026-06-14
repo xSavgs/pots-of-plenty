@@ -148,6 +148,91 @@ app.post("/create-checkout-session", async (req, res) => {
 });
 
 /* =========================
+   ADMIN API
+========================= */
+
+function requireAdmin(req, res, next) {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+
+    if (!token || token !== process.env.ADMIN_TOKEN) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    next();
+}
+
+app.get("/api/admin/orders", requireAdmin, async (req, res) => {
+    try {
+        const sessions = await stripe.checkout.sessions.list({
+            limit: 20,
+            expand: ["data.line_items"]
+        });
+
+        const orders = sessions.data.map((session) => ({
+            id: session.id,
+            amount_total: session.amount_total,
+            currency: session.currency,
+            status: session.payment_status,
+            customer_email: session.customer_details?.email || "No email",
+            customer_name: session.customer_details?.name || "No name",
+            phone: session.customer_details?.phone || "No phone",
+            created: session.created,
+            items: session.line_items?.data?.map((item) => ({
+                name: item.description,
+                quantity: item.quantity,
+                amount: item.amount_total
+            })) || []
+        }));
+
+        res.json({ success: true, orders });
+    } catch (err) {
+        console.error("Admin orders error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get("/api/admin/products", requireAdmin, (req, res) => {
+    res.json({
+        success: true,
+        products: [
+            {
+                name: "Hoodie — White",
+                standard: 34.99,
+                premium: 49.99,
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+            },
+            {
+                name: "Hoodie — Black",
+                standard: 34.99,
+                premium: 49.99,
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+            },
+            {
+                name: "T-Shirt — White",
+                price: 24.99,
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+            },
+            {
+                name: "T-Shirt — Black",
+                price: 24.99,
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+            }
+        ]
+    });
+});
+
+app.get("/api/admin/status", requireAdmin, (req, res) => {
+    res.json({
+        success: true,
+        server: "online",
+        stripeKeyLoaded: !!process.env.STRIPE_SECRET_KEY,
+        aisKeyLoaded: !!process.env.AISSTREAM_API_KEY,
+        baseUrl: BASE_URL,
+        time: new Date().toISOString()
+    });
+});
+
+/* =========================
    STATIC FRONTEND
 ========================= */
 
@@ -156,7 +241,7 @@ console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
-const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track", "admin", "admin-dashboard"];
+const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track", "admin", "admin-dashboard", "admin-orders", "admin-products", "admin-status"];
 
 pages.forEach((page) => {
     app.get(`/${page}`, (req, res) => {

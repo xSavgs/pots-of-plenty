@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Status — Pots of Plenty</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section class="section" style="padding:60px 0;">
+    <h1>Site Status</h1>
+    <p style="opacity:.7;margin-bottom:30px;">Server, Stripe and vessel tracking health.</p>
+
+    <a href="/admin-dashboard" class="outline-btn">← Back to Dashboard</a>
+
+    <div id="status" style="margin-top:40px;"></div>
+</section>
+
+<script>
+const token = localStorage.getItem("adminToken");
+
+if (!token) {
+    window.location.href = "/admin";
+}
+
+async function loadStatus() {
+    const box = document.getElementById("status");
+
+    try {
+        const res = await fetch("/api/admin/status", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        box.innerHTML = `
+            <div class="product-card" style="padding:25px;">
+                <h3>System</h3>
+                <p>Server: ${data.server === "online" ? "✅ Online" : "❌ Offline"}</p>
+                <p>Stripe Key: ${data.stripeKeyLoaded ? "✅ Loaded" : "❌ Missing"}</p>
+                <p>AIS Key: ${data.aisKeyLoaded ? "✅ Loaded" : "⚠️ Missing"}</p>
+                <p>Base URL: ${data.baseUrl}</p>
+                <p>Checked: ${new Date(data.time).toLocaleString()}</p>
+            </div>
+        `;
+    } catch (err) {
+        console.error(err);
+        box.innerHTML = "<p>Status check failed.</p>";
+    }
+}
+
+loadStatus();
+</script>
+
+</body>
+</html>
