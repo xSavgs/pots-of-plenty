@@ -5,59 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Payment Cancelled — Pots of Plenty</title>
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/style.css" />
+
     <style>
         body {
-            font-family: Inter, sans-serif;
-            background: #0f0f0f;
-            color: white;
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.82)),
+                url("/assets/hero.jpg") center/cover no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            padding: 30px;
+        }
+
+        .checkout-result {
+            width: 100%;
+            max-width: 680px;
+            padding: 42px;
+            border-radius: 24px;
+            background: rgba(2,8,22,0.88);
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 30px 90px rgba(0,0,0,0.45);
             text-align: center;
+            backdrop-filter: blur(16px);
         }
 
-        .box {
-            max-width: 500px;
-            padding: 40px;
-            background: #1a1a1a;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        .checkout-result img {
+            width: 110px;
+            margin: 0 auto 22px;
         }
 
-        h1 {
-            color: #ef4444;
-            margin-bottom: 10px;
+        .checkout-result h1 {
+            font-size: 48px;
+            margin-bottom: 14px;
+            color: #ff7777;
         }
 
-        p {
-            opacity: 0.8;
-            margin-bottom: 25px;
+        .checkout-result p {
+            color: rgba(255,255,255,0.78);
+            line-height: 1.7;
+            margin-bottom: 18px;
         }
 
-        a {
-            display: inline-block;
-            padding: 12px 20px;
-            background: white;
-            color: black;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
         }
 
-        a:hover {
-            opacity: 0.85;
+        @media (max-width: 700px) {
+            .checkout-result {
+                padding: 30px 22px;
+            }
+
+            .checkout-result h1 {
+                font-size: 36px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="box">
-        <h1>Payment Cancelled ❌</h1>
-        <p>Your payment was not completed. You can try again anytime.</p>
-        <a href="/shop">Back to Shop</a>
+
+<div class="checkout-result">
+    <a href="/">
+        <img src="/assets/logo.png" alt="Pots of Plenty">
+    </a>
+
+    <h1>Payment Cancelled</h1>
+
+    <p>
+        Your payment was not completed. Your cart should still be saved, so you can return to checkout whenever you’re ready.
+    </p>
+
+    <div class="result-actions">
+        <a href="/shop" class="hero-btn">Back To Shop</a>
+        <a href="/contact" class="outline-btn">Need Help?</a>
     </div>
+</div>
+
 </body>
 </html>

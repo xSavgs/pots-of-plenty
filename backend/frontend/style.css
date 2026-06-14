@@ -1478,3 +1478,106 @@ select option {
         padding: 14px;
     }
 }
+
+/* =========================
+   FINAL POLISH UPGRADES
+========================= */
+
+/* Hide unfinished account icon */
+#userBtn {
+    display: none !important;
+}
+
+/* Cart count badge */
+#cartBtn {
+    position: relative;
+}
+
+.cart-count-badge {
+    position: absolute;
+    top: -7px;
+    right: -10px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #38d66b;
+    color: #071b0d;
+    font-size: 11px;
+    font-weight: 900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Better cart lines */
+.cart-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    color: rgba(255,255,255,0.8);
+}
+
+.cart-line strong {
+    color: white;
+}
+
+.cart-delivery-note,
+.cart-collection-note {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.cart-collection-note {
+    border: 1px solid rgba(56,214,107,0.3);
+}
+
+.checkout-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Contact form polish */
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font: inherit;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.contact-form textarea {
+    resize: vertical;
+}
+
+/* Make select dropdowns readable */
+select option {
+    color: black;
+}
+
+/* Better small screen button stacks */
+@media (max-width: 700px) {
+    .hero-content div[style*="display: flex"] {
+        flex-direction: column;
+    }
+
+    .hero-btn,
+    .outline-btn {
+        text-align: center;
+    }
+}

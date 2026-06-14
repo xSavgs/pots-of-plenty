@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Messages — Pots of Plenty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/admin.css">
+    <script src="/admin-shell.js" defer></script>
+</head>
+
+<body>
+
+<header class="admin-header">
+    <div>
+        <h1>Messages</h1>
+        <p>Customer enquiries from the website contact form.</p>
+    </div>
+
+    <div class="admin-actions">
+        <button class="admin-btn" id="refreshBtn">Refresh</button>
+    </div>
+</header>
+
+<div class="admin-grid-4">
+    <div class="admin-card">
+        <span>Total Messages</span>
+        <strong id="summaryTotal">0</strong>
+    </div>
+
+    <div class="admin-card status-warning">
+        <span>Unread</span>
+        <strong id="summaryUnread">0</strong>
+    </div>
+
+    <div class="admin-card status-good">
+        <span>Read</span>
+        <strong id="summaryRead">0</strong>
+    </div>
+
+    <div class="admin-card">
+        <span>Latest</span>
+        <strong id="summaryLatest">—</strong>
+    </div>
+</div>
+
+<div class="admin-controls" style="grid-template-columns:2fr 1fr auto;">
+    <input type="search" id="searchInput" placeholder="Search name, email, subject or message...">
+
+    <select id="readFilter">
+        <option value="all">All messages</option>
+        <option value="unread">Unread only</option>
+        <option value="read">Read only</option>
+    </select>
+
+    <button class="admin-btn" id="clearBtn">Clear</button>
+</div>
+
+<div id="messages">
+    <div class="admin-loading">Loading messages...</div>
+</div>
+
+<script>
+let allMessages = [];
+
+const messagesContainer = document.getElementById("messages");
+const searchInput = document.getElementById("searchInput");
+const readFilter = document.getElementById("readFilter");
+const refreshBtn = document.getElementById("refreshBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function updateSummary() {
+    const unread = allMessages.filter((message) => !message.read);
+    const read = allMessages.filter((message) => message.read);
+
+    document.getElementById("summaryTotal").textContent = allMessages.length;
+    document.getElementById("summaryUnread").textContent = unread.length;
+    document.getElementById("summaryRead").textContent = read.length;
+
+    document.getElementById("summaryLatest").textContent =
+        allMessages[0]
+            ? new Date(allMessages[0].createdAt).toLocaleDateString()
+            : "—";
+}
+
+function getSearchText(message) {
+    return `
+        ${message.name}
+        ${message.email}
+        ${message.phone}
+        ${message.subject}
+        ${message.message}
+    `.toLowerCase();
+}
+
+function getFilteredMessages() {
+    const search = searchInput.value.trim().toLowerCase();
+    const filter = readFilter.value;
+
+    let messages = [...allMessages];
+
+    if (search) {
+        messages = messages.filter((message) => {
+            return getSearchText(message).includes(search);
+        });
+    }
+
+    if (filter === "read") {
+        messages = messages.filter((message) => message.read);
+    }
+
+    if (filter === "unread") {
+        messages = messages.filter((message) => !message.read);
+    }
+
+    return messages;
+}
+
+function renderMessages() {
+    updateSummary();
+
+    const messages = getFilteredMessages();
+
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = `<div class="admin-empty">No messages match your filters.</div>`;
+        return;
+    }
+
+    messagesContainer.innerHTML = `
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Customer</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Received</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${messages.map((message) => `
+                        <tr>
+                            <td>
+                                ${
+                                    message.read
+                                        ? `<span class="admin-badge badge-neutral">Read</span>`
+                                        : `<span class="admin-badge badge-warning">Unread</span>`
+                                }
+                            </td>
+
+                            <td>
+                                <strong>${escapeHTML(message.name)}</strong>
+                                <div class="admin-muted">${escapeHTML(message.email)}</div>
+                                <div class="admin-muted">${escapeHTML(message.phone || "No phone")}</div>
+                            </td>
+
+                            <td>
+                                <strong>${escapeHTML(message.subject || "Website enquiry")}</strong>
+                            </td>
+
+                            <td style="max-width:360px;">
+                                ${escapeHTML(message.message)}
+                            </td>
+
+                            <td>
+                                ${new Date(message.createdAt).toLocaleString()}
+                            </td>
+
+                            <td>
+                                <div class="admin-actions">
+                                    <a class="admin-small-btn" href="mailto:${escapeHTML(message.email)}?subject=Re: ${encodeURIComponent(message.subject || "Website enquiry")}">
+                                        Reply
+                                    </a>
+
+                                    <button class="admin-small-btn toggle-read" data-id="${escapeHTML(message.id)}" data-read="${message.read ? "false" : "true"}">
+                                        ${message.read ? "Mark Unread" : "Mark Read"}
+                                    </button>
+
+                                    <button class="admin-small-btn delete-message" data-id="${escapeHTML(message.id)}">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+async function loadMessages() {
+    messagesContainer.innerHTML = `<div class="admin-loading">Loading messages...</div>`;
+
+    try {
+        const res = await window.adminFetch("/api/admin/messages");
+
+        if (!res) return;
+
+        const data = await res.json();
+
+        if (!data.success) {
+            messagesContainer.innerHTML = `<div class="admin-empty">Could not load messages.</div>`;
+            return;
+        }
+
+        allMessages = data.messages || [];
+
+        renderMessages();
+
+    } catch (err) {
+        console.error(err);
+        messagesContainer.innerHTML = `<div class="admin-empty">Messages API failed.</div>`;
+    }
+}
+
+async function markRead(messageId, read) {
+    const res = await window.adminFetch(`/api/admin/messages/${encodeURIComponent(messageId)}/read`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            read
+        })
+    });
+
+    if (!res) return;
+
+    const message = allMessages.find((item) => item.id === messageId);
+
+    if (message) {
+        message.read = read;
+    }
+
+    renderMessages();
+}
+
+async function deleteMessage(messageId) {
+    if (!confirm("Delete this message?")) return;
+
+    const res = await window.adminFetch(`/api/admin/messages/${encodeURIComponent(messageId)}`, {
+        method: "DELETE"
+    });
+
+    if (!res) return;
+
+    allMessages = allMessages.filter((message) => message.id !== messageId);
+
+    renderMessages();
+}
+
+messagesContainer.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+
+    if (!button) return;
+
+    const id = button.dataset.id;
+
+    if (button.classList.contains("toggle-read")) {
+        markRead(id, button.dataset.read === "true");
+    }
+
+    if (button.classList.contains("delete-message")) {
+        deleteMessage(id);
+    }
+});
+
+searchInput.addEventListener("input", renderMessages);
+readFilter.addEventListener("change", renderMessages);
+refreshBtn.addEventListener("click", loadMessages);
+
+clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    readFilter.value = "all";
+    renderMessages();
+});
+
+loadMessages();
+</script>
+
+</body>
+</html>

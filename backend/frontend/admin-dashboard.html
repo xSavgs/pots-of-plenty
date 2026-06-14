@@ -2,340 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard — Pots of Plenty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="/style.css">
-
-    <style>
-        .admin-dashboard-wrap {
-            width: 92%;
-            max-width: 1450px;
-            margin: auto;
-            padding: 55px 0;
-        }
-
-        .admin-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 22px;
-            flex-wrap: wrap;
-            margin-bottom: 35px;
-        }
-
-        .admin-top h1 {
-            font-size: 52px;
-            margin-bottom: 8px;
-        }
-
-        .admin-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .small-btn {
-            padding: 11px 16px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.08);
-            color: white;
-            cursor: pointer;
-            font-weight: 800;
-            text-decoration: none;
-            font-size: 13px;
-            display: inline-block;
-        }
-
-        .small-btn:hover {
-            background: rgba(255,255,255,0.16);
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(170px, 1fr));
-            gap: 16px;
-            margin: 28px 0;
-        }
-
-        .summary-card {
-            padding: 22px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .summary-card span {
-            display: block;
-            opacity: .7;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .summary-card strong {
-            font-size: 30px;
-        }
-
-        .status-good {
-            border-left: 5px solid #38d66b;
-        }
-
-        .status-warning {
-            border-left: 5px solid #ffc857;
-        }
-
-        .status-bad {
-            border-left: 5px solid #ff5b5b;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1.3fr .7fr;
-            gap: 22px;
-            margin-top: 25px;
-        }
-
-        .panel {
-            padding: 25px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.055);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .panel h3 {
-            font-size: 24px;
-            margin-bottom: 18px;
-        }
-
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(180px, 1fr));
-            gap: 16px;
-        }
-
-        .quick-card {
-            padding: 22px;
-            border-radius: 18px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .quick-card h3 {
-            margin-bottom: 10px;
-            font-size: 21px;
-        }
-
-        .quick-card p {
-            opacity: .7;
-            min-height: 44px;
-            margin-bottom: 18px;
-        }
-
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .status-row:last-child {
-            border-bottom: none;
-        }
-
-        .status-row span:first-child {
-            opacity: .65;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .badge-good {
-            background: #38d66b;
-            color: #071b0d;
-        }
-
-        .badge-warning {
-            background: #ffc857;
-            color: #1d1600;
-        }
-
-        .badge-bad {
-            background: #d63838;
-            color: white;
-        }
-
-        .warnings {
-            padding: 22px;
-            margin: 26px 0;
-            border-radius: 18px;
-            background: rgba(255,91,91,0.1);
-            border: 1px solid rgba(255,91,91,0.35);
-        }
-
-        .warnings h3 {
-            margin-bottom: 12px;
-        }
-
-        .warnings li {
-            margin-bottom: 8px;
-        }
-
-        .success-box {
-            padding: 20px;
-            margin: 26px 0;
-            border-radius: 18px;
-            background: rgba(56,214,107,0.1);
-            border: 1px solid rgba(56,214,107,0.32);
-        }
-
-        .orders-table-wrap {
-            overflow-x: auto;
-        }
-
-        .mini-orders {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 750px;
-        }
-
-        .mini-orders th,
-        .mini-orders td {
-            padding: 14px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            vertical-align: top;
-        }
-
-        .mini-orders th {
-            opacity: .65;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-        }
-
-        .muted {
-            opacity: .7;
-            font-size: 14px;
-        }
-
-        .order-id {
-            font-size: 11px;
-            opacity: .45;
-            word-break: break-all;
-            margin-top: 4px;
-        }
-
-        .admin-checklist {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .admin-checklist li {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 13px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .admin-checklist li:last-child {
-            border-bottom: none;
-        }
-
-        .loading-state,
-        .empty-state {
-            padding: 35px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        @media (max-width: 1050px) {
-            .summary-grid,
-            .dashboard-grid,
-            .quick-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .admin-top h1 {
-                font-size: 38px;
-            }
-
-            .status-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-        }
-    </style>
-
-    <script>
-        const token = localStorage.getItem("adminToken");
-
-        if (!token) {
-            window.location.href = "/admin";
-        }
-    </script>
+    <link rel="stylesheet" href="/admin.css">
+    <script src="/admin-shell.js" defer></script>
 </head>
 
 <body>
 
-<div class="top-bar">
-    ⚓ POTS OF PLENTY ADMIN PANEL
+<header class="admin-header">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Store overview, recent orders, enquiries, system health and vessel tracking.</p>
+        <p class="admin-muted" id="lastChecked">Loading dashboard...</p>
+    </div>
+
+    <div class="admin-actions">
+        <button class="admin-btn" id="refreshBtn">Refresh</button>
+        <button class="admin-btn" id="copyReportBtn">Copy Report</button>
+        <a href="/" target="_blank" rel="noopener noreferrer" class="admin-btn primary">Open Site</a>
+    </div>
+</header>
+
+<div id="dashboard">
+    <div class="admin-loading">Loading admin dashboard...</div>
 </div>
-
-<section class="admin-dashboard-wrap">
-
-    <div class="admin-top">
-        <div>
-            <h1>Dashboard</h1>
-            <p style="opacity:.7;">Store overview, recent orders, system health and vessel tracking.</p>
-            <p class="muted" id="lastChecked">Loading dashboard...</p>
-        </div>
-
-        <div class="admin-actions">
-            <button id="refreshBtn" class="small-btn">
-                Refresh
-            </button>
-
-            <button id="copyReportBtn" class="small-btn">
-                Copy Report
-            </button>
-
-            <a href="/" target="_blank" rel="noopener noreferrer" class="small-btn">
-                Open Site
-            </a>
-
-            <button id="logoutBtn" class="small-btn">
-                Logout
-            </button>
-        </div>
-    </div>
-
-    <div id="dashboard">
-        <div class="loading-state">
-            Loading admin dashboard...
-        </div>
-    </div>
-
-</section>
 
 <script>
 let dashboardData = null;
 
 const dashboard = document.getElementById("dashboard");
+const lastChecked = document.getElementById("lastChecked");
 const refreshBtn = document.getElementById("refreshBtn");
 const copyReportBtn = document.getElementById("copyReportBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const lastChecked = document.getElementById("lastChecked");
 
 function escapeHTML(value) {
     return String(value ?? "")
@@ -350,8 +51,12 @@ function moneyFromPence(value) {
     return `£${(Number(value || 0) / 100).toFixed(2)}`;
 }
 
-function formatPrice(value) {
-    return `£${Number(value || 0).toFixed(2)}`;
+function formatAge(seconds) {
+    if (seconds === null || seconds === undefined) return "No live data yet";
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m ago`;
 }
 
 function formatDuration(seconds) {
@@ -367,19 +72,8 @@ function formatDuration(seconds) {
     return `${minutes}m`;
 }
 
-function formatAge(seconds) {
-    if (seconds === null || seconds === undefined) {
-        return "No live data yet";
-    }
-
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-
-    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m ago`;
-}
-
 function badge(type, text) {
-    return `<span class="badge badge-${type}">${escapeHTML(text)}</span>`;
+    return `<span class="admin-badge badge-${type}">${escapeHTML(text)}</span>`;
 }
 
 function statusClass(ok, warning = false) {
@@ -391,13 +85,8 @@ function statusClass(ok, warning = false) {
 function paymentBadge(status) {
     const clean = String(status || "").toLowerCase();
 
-    if (clean === "paid") {
-        return badge("good", "Paid");
-    }
-
-    if (clean === "unpaid") {
-        return badge("bad", "Not Paid");
-    }
+    if (clean === "paid") return badge("good", "Paid");
+    if (clean === "unpaid") return badge("bad", "Not Paid");
 
     return badge("warning", status || "Pending");
 }
@@ -405,17 +94,17 @@ function paymentBadge(status) {
 function renderWarnings(data) {
     if (!data.warnings || data.warnings.length === 0) {
         return `
-            <div class="success-box">
+            <div class="admin-success-box">
                 <h3>✅ Everything Looks Healthy</h3>
-                <p class="muted">
-                    Stripe, server settings and current checks are all passing.
+                <p class="admin-muted">
+                    Stripe, server checks and core settings are currently passing.
                 </p>
             </div>
         `;
     }
 
     return `
-        <div class="warnings">
+        <div class="admin-warning-box">
             <h3>Action Needed</h3>
             <ul>
                 ${data.warnings.map((warning) => `
@@ -428,61 +117,41 @@ function renderWarnings(data) {
 
 function renderRecentOrders(orders) {
     if (!orders || orders.length === 0) {
-        return `
-            <div class="empty-state">
-                No recent Stripe orders found.
-            </div>
-        `;
+        return `<div class="admin-empty">No recent Stripe orders found.</div>`;
     }
 
     return `
-        <div class="orders-table-wrap">
-            <table class="mini-orders">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Payment</th>
                         <th>Customer</th>
                         <th>Total</th>
+                        <th>Fulfilment</th>
                         <th>Date</th>
-                        <th>Items</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     ${orders.map((order) => `
                         <tr>
-                            <td>
-                                ${paymentBadge(order.status)}
-                                <div class="order-id">${escapeHTML(order.id)}</div>
-                            </td>
+                            <td>${paymentBadge(order.status)}</td>
 
                             <td>
                                 <strong>${escapeHTML(order.customer_name)}</strong>
-                                <div class="muted">${escapeHTML(order.customer_email)}</div>
-                                <div class="muted">${escapeHTML(order.phone)}</div>
+                                <div class="admin-muted">${escapeHTML(order.customer_email)}</div>
                             </td>
 
-                            <td>
-                                <strong>${moneyFromPence(order.amount_total)}</strong>
-                            </td>
+                            <td><strong>${moneyFromPence(order.amount_total)}</strong></td>
+
+                            <td>${renderFulfilmentBadge(order.admin?.fulfilment)}</td>
 
                             <td>
                                 ${
                                     order.created
                                         ? new Date(order.created * 1000).toLocaleString()
                                         : "Unknown"
-                                }
-                            </td>
-
-                            <td>
-                                ${
-                                    order.items && order.items.length
-                                        ? order.items.map((item) => `
-                                            <div class="muted">
-                                                ${escapeHTML(item.quantity || 1)} × ${escapeHTML(item.name || "Item")}
-                                            </div>
-                                        `).join("")
-                                        : `<span class="muted">No items</span>`
                                 }
                             </td>
                         </tr>
@@ -493,6 +162,33 @@ function renderRecentOrders(orders) {
     `;
 }
 
+function renderFulfilmentBadge(status) {
+    if (status === "packed") return badge("warning", "Packed");
+    if (status === "ready") return badge("good", "Ready");
+    if (status === "collected") return badge("good", "Collected");
+    if (status === "issue") return badge("bad", "Issue");
+    if (status === "refunded") return badge("bad", "Refunded");
+
+    return badge("neutral", "New");
+}
+
+function renderMessages(messages) {
+    if (!messages || messages.length === 0) {
+        return `<div class="admin-empty">No customer messages yet.</div>`;
+    }
+
+    return messages.map((message) => `
+        <div class="admin-row">
+            <div>
+                <strong>${message.read ? "✉️" : "📩"} ${escapeHTML(message.name)}</strong>
+                <div class="admin-muted">${escapeHTML(message.subject || "Website enquiry")}</div>
+            </div>
+
+            <a href="/admin-messages" class="admin-small-btn">Open</a>
+        </div>
+    `).join("");
+}
+
 function renderDashboard(data) {
     const stripeOk = data.stripe.keyLoaded && data.stripe.apiConnected;
     const aisOk = data.ais.keyLoaded && data.ais.connection === "Open";
@@ -501,344 +197,197 @@ function renderDashboard(data) {
         data.vessel.dataAgeSeconds !== undefined &&
         data.vessel.dataAgeSeconds < 3600;
 
-    const siteHealthy = data.overview.siteHealthy;
-
-    const lat = data.vessel.latitude;
-    const lon = data.vessel.longitude;
-
     dashboard.innerHTML = `
-        <div class="summary-grid">
-            <div class="summary-card ${statusClass(data.overview.paidRecentOrders > 0, true)}">
+        <div class="admin-grid-4">
+            <div class="admin-card ${statusClass(data.overview.paidRecentOrders > 0, true)}">
                 <span>Recent Paid Orders</span>
                 <strong>${data.overview.paidRecentOrders}</strong>
             </div>
 
-            <div class="summary-card ${statusClass(data.overview.recentPaidRevenue > 0, true)}">
-                <span>Recent Paid Revenue</span>
+            <div class="admin-card ${statusClass(data.overview.recentPaidRevenue > 0, true)}">
+                <span>Recent Revenue</span>
                 <strong>${moneyFromPence(data.overview.recentPaidRevenue)}</strong>
             </div>
 
-            <div class="summary-card ${statusClass(data.overview.unpaidRecentOrders === 0, data.overview.unpaidRecentOrders > 0)}">
-                <span>Unpaid Checkouts</span>
-                <strong>${data.overview.unpaidRecentOrders}</strong>
+            <div class="admin-card ${statusClass(data.overview.unreadMessages === 0, data.overview.unreadMessages > 0)}">
+                <span>Unread Messages</span>
+                <strong>${data.overview.unreadMessages}</strong>
             </div>
 
-            <div class="summary-card ${statusClass(siteHealthy, !siteHealthy)}">
+            <div class="admin-card ${statusClass(data.overview.siteHealthy, !data.overview.siteHealthy)}">
                 <span>Site Health</span>
-                <strong>${siteHealthy ? "Healthy" : "Check"}</strong>
+                <strong>${data.overview.siteHealthy ? "Healthy" : "Check"}</strong>
             </div>
         </div>
 
         ${renderWarnings(data)}
 
-        <div class="dashboard-grid">
-            <div class="panel">
-                <h3>Recent Orders</h3>
-
+        <div class="admin-grid-2">
+            <section class="admin-panel">
+                <h2>Recent Orders</h2>
                 ${renderRecentOrders(data.recentOrders)}
 
-                <div style="margin-top:20px;">
-                    <a href="/admin-orders" class="small-btn">
-                        Open All Orders
-                    </a>
+                <div style="margin-top:18px;">
+                    <a href="/admin-orders" class="admin-btn">Open All Orders</a>
                 </div>
-            </div>
+            </section>
 
-            <div class="panel">
-                <h3>System Snapshot</h3>
+            <section class="admin-panel">
+                <h2>System Snapshot</h2>
 
-                <div class="status-row">
+                <div class="admin-row">
                     <span>Server</span>
                     <strong>${badge("good", "Online")}</strong>
                 </div>
 
-                <div class="status-row">
+                <div class="admin-row">
                     <span>Uptime</span>
                     <strong>${formatDuration(data.server.uptimeSeconds)}</strong>
                 </div>
 
-                <div class="status-row">
+                <div class="admin-row">
                     <span>Stripe</span>
                     <strong>${stripeOk ? badge("good", "Connected") : badge("bad", "Issue")}</strong>
                 </div>
 
-                <div class="status-row">
+                <div class="admin-row">
                     <span>AIS Tracking</span>
                     <strong>${aisOk ? badge("good", "Open") : badge("warning", data.ais.connection)}</strong>
                 </div>
 
-                <div class="status-row">
-                    <span>Base URL</span>
-                    <strong>${escapeHTML(data.server.baseUrl)}</strong>
+                <div class="admin-row">
+                    <span>Latest Vessel Data</span>
+                    <strong>${vesselFresh ? badge("good", formatAge(data.vessel.dataAgeSeconds)) : badge("warning", formatAge(data.vessel.dataAgeSeconds))}</strong>
                 </div>
 
                 <div style="margin-top:18px;">
-                    <a href="/admin-status" class="small-btn">
-                        Full Status
+                    <a href="/admin-status" class="admin-btn">Full Status</a>
+                </div>
+            </section>
+        </div>
+
+        <div class="admin-grid-2">
+            <section class="admin-panel">
+                <h2>Quick Actions</h2>
+
+                <div class="admin-grid-4" style="grid-template-columns:repeat(2,minmax(160px,1fr));margin:0;">
+                    <a href="/admin-orders" class="admin-card">
+                        <span>Payments</span>
+                        <strong>Orders</strong>
+                    </a>
+
+                    <a href="/admin-products" class="admin-card">
+                        <span>Store</span>
+                        <strong>Products</strong>
+                    </a>
+
+                    <a href="/admin-messages" class="admin-card">
+                        <span>Customer</span>
+                        <strong>Messages</strong>
+                    </a>
+
+                    <a href="/track" target="_blank" rel="noopener noreferrer" class="admin-card">
+                        <span>Live Map</span>
+                        <strong>Vessel</strong>
                     </a>
                 </div>
-            </div>
+            </section>
+
+            <section class="admin-panel">
+                <h2>Recent Messages</h2>
+                ${renderMessages(data.recentMessages)}
+            </section>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="panel">
-                <h3>Quick Actions</h3>
+        <div class="admin-grid-2">
+            <section class="admin-panel">
+                <h2>Today</h2>
 
-                <div class="quick-grid">
-                    <div class="quick-card">
-                        <h3>Orders</h3>
-                        <p>View payments, customers and order items.</p>
-                        <a href="/admin-orders" class="small-btn">Open Orders</a>
-                    </div>
-
-                    <div class="quick-card">
-                        <h3>Products</h3>
-                        <p>Review pricing, sizes and product links.</p>
-                        <a href="/admin-products" class="small-btn">Open Products</a>
-                    </div>
-
-                    <div class="quick-card">
-                        <h3>Vessel Tracking</h3>
-                        <p>Open the live map for POTS OF PLENTY.</p>
-                        <a href="/track" target="_blank" rel="noopener noreferrer" class="small-btn">Open Tracking</a>
-                    </div>
-
-                    <div class="quick-card">
-                        <h3>Live Shop</h3>
-                        <p>Check the public shop as a customer.</p>
-                        <a href="/shop" target="_blank" rel="noopener noreferrer" class="small-btn">Open Shop</a>
-                    </div>
-
-                    <div class="quick-card">
-                        <h3>Stripe</h3>
-                        <p>Open payments in Stripe Dashboard.</p>
-                        <a href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener noreferrer" class="small-btn">Open Stripe</a>
-                    </div>
-
-                    <div class="quick-card">
-                        <h3>Railway</h3>
-                        <p>Open hosting dashboard for deploys/logs.</p>
-                        <a href="https://railway.app/dashboard" target="_blank" rel="noopener noreferrer" class="small-btn">Open Railway</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>Store Checklist</h3>
-
-                <ul class="admin-checklist">
-                    <li>
-                        <span>Stripe key loaded</span>
-                        <strong>${data.stripe.keyLoaded ? badge("good", "Yes") : badge("bad", "No")}</strong>
-                    </li>
-
-                    <li>
-                        <span>Stripe API connected</span>
-                        <strong>${data.stripe.apiConnected ? badge("good", "Yes") : badge("bad", "No")}</strong>
-                    </li>
-
-                    <li>
-                        <span>AIS key loaded</span>
-                        <strong>${data.ais.keyLoaded ? badge("good", "Yes") : badge("warning", "No")}</strong>
-                    </li>
-
-                    <li>
-                        <span>Vessel data fresh</span>
-                        <strong>${vesselFresh ? badge("good", "Fresh") : badge("warning", "Old")}</strong>
-                    </li>
-
-                    <li>
-                        <span>Products live</span>
-                        <strong>${badge("good", `${data.products.live}/${data.products.total}`)}</strong>
-                    </li>
-
-                    <li>
-                        <span>Hoodie pricing</span>
-                        <strong>
-                            ${formatPrice(data.products.standardHoodiePrice)} / ${formatPrice(data.products.premiumHoodiePrice)}
-                        </strong>
-                    </li>
-
-                    <li>
-                        <span>T-shirt pricing</span>
-                        <strong>${formatPrice(data.products.tshirtPrice)}</strong>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="panel">
-                <h3>Vessel Snapshot</h3>
-
-                <div class="status-row">
-                    <span>Name</span>
-                    <strong>${escapeHTML(data.vessel.name)}</strong>
-                </div>
-
-                <div class="status-row">
-                    <span>MMSI</span>
-                    <strong>${escapeHTML(data.vessel.mmsi)}</strong>
-                </div>
-
-                <div class="status-row">
-                    <span>Callsign</span>
-                    <strong>${escapeHTML(data.vessel.callsign)}</strong>
-                </div>
-
-                <div class="status-row">
-                    <span>Position</span>
-                    <strong>
-                        ${
-                            lat && lon
-                                ? `${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`
-                                : "No position"
-                        }
-                    </strong>
-                </div>
-
-                <div class="status-row">
-                    <span>Last AIS Data</span>
-                    <strong>${formatAge(data.vessel.dataAgeSeconds)}</strong>
-                </div>
-
-                <div class="status-row">
-                    <span>Speed / Course</span>
-                    <strong>
-                        ${
-                            data.vessel.sog !== null
-                                ? `${data.vessel.sog} kn`
-                                : "Unknown"
-                        }
-                        /
-                        ${
-                            data.vessel.cog !== null
-                                ? `${data.vessel.cog}°`
-                                : "Unknown"
-                        }
-                    </strong>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>Today</h3>
-
-                <div class="status-row">
+                <div class="admin-row">
                     <span>Paid Orders Today</span>
                     <strong>${data.overview.paidOrdersToday}</strong>
                 </div>
 
-                <div class="status-row">
-                    <span>Paid Revenue Today</span>
+                <div class="admin-row">
+                    <span>Revenue Today</span>
                     <strong>${moneyFromPence(data.overview.todayPaidRevenue)}</strong>
                 </div>
 
-                <div class="status-row">
+                <div class="admin-row">
                     <span>Recent Sessions Checked</span>
                     <strong>${data.overview.totalRecentOrders}</strong>
                 </div>
+            </section>
 
-                <div class="status-row">
-                    <span>Checked At</span>
-                    <strong>${new Date(data.server.checkedAt).toLocaleString()}</strong>
+            <section class="admin-panel">
+                <h2>Vessel Snapshot</h2>
+
+                <div class="admin-row">
+                    <span>Name</span>
+                    <strong>${escapeHTML(data.vessel.name)}</strong>
                 </div>
-            </div>
+
+                <div class="admin-row">
+                    <span>MMSI</span>
+                    <strong>${escapeHTML(data.vessel.mmsi)}</strong>
+                </div>
+
+                <div class="admin-row">
+                    <span>Position</span>
+                    <strong>
+                        ${
+                            data.vessel.latitude && data.vessel.longitude
+                                ? `${Number(data.vessel.latitude).toFixed(5)}, ${Number(data.vessel.longitude).toFixed(5)}`
+                                : "No position"
+                        }
+                    </strong>
+                </div>
+            </section>
         </div>
     `;
-}
-
-async function verifyAdmin() {
-    const res = await fetch("/api/admin/verify", {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    if (!res.ok) {
-        localStorage.removeItem("adminToken");
-        window.location.href = "/admin";
-    }
 }
 
 async function loadDashboard() {
-    dashboard.innerHTML = `
-        <div class="loading-state">
-            Loading admin dashboard...
-        </div>
-    `;
+    dashboard.innerHTML = `<div class="admin-loading">Loading admin dashboard...</div>`;
 
     try {
-        const res = await fetch("/api/admin/dashboard", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const res = await window.adminFetch("/api/admin/dashboard");
 
-        if (res.status === 401) {
-            localStorage.removeItem("adminToken");
-            window.location.href = "/admin";
-            return;
-        }
+        if (!res) return;
 
         const data = await res.json();
 
         if (!data.success) {
-            dashboard.innerHTML = `
-                <div class="empty-state">
-                    Dashboard API returned an error.
-                </div>
-            `;
+            dashboard.innerHTML = `<div class="admin-empty">Dashboard API returned an error.</div>`;
             return;
         }
 
         dashboardData = data;
 
-        lastChecked.textContent =
-            `Last checked: ${new Date().toLocaleString()}`;
+        lastChecked.textContent = `Last checked: ${new Date().toLocaleString()}`;
 
         renderDashboard(data);
 
     } catch (err) {
         console.error(err);
-
-        dashboard.innerHTML = `
-            <div class="empty-state">
-                Could not load dashboard.
-            </div>
-        `;
+        dashboard.innerHTML = `<div class="admin-empty">Could not load dashboard.</div>`;
     }
 }
 
 async function copyStatusReport() {
-    if (!dashboardData) {
-        return;
-    }
+    if (!dashboardData) return;
 
     const report = `
 POTS OF PLENTY ADMIN REPORT
 
 Site Health: ${dashboardData.overview.siteHealthy ? "Healthy" : "Needs Check"}
 Recent Paid Orders: ${dashboardData.overview.paidRecentOrders}
-Recent Paid Revenue: ${moneyFromPence(dashboardData.overview.recentPaidRevenue)}
-Unpaid Checkouts: ${dashboardData.overview.unpaidRecentOrders}
-Paid Orders Today: ${dashboardData.overview.paidOrdersToday}
-Paid Revenue Today: ${moneyFromPence(dashboardData.overview.todayPaidRevenue)}
+Recent Revenue: ${moneyFromPence(dashboardData.overview.recentPaidRevenue)}
+Unread Messages: ${dashboardData.overview.unreadMessages}
 
-Server: ${dashboardData.server.status}
-Uptime: ${formatDuration(dashboardData.server.uptimeSeconds)}
-Base URL: ${dashboardData.server.baseUrl}
-
-Stripe Key Loaded: ${dashboardData.stripe.keyLoaded ? "Yes" : "No"}
 Stripe Connected: ${dashboardData.stripe.apiConnected ? "Yes" : "No"}
-
-AIS Key Loaded: ${dashboardData.ais.keyLoaded ? "Yes" : "No"}
 AIS Connection: ${dashboardData.ais.connection}
-
-Vessel: ${dashboardData.vessel.name}
-MMSI: ${dashboardData.vessel.mmsi}
-Callsign: ${dashboardData.vessel.callsign}
-Position: ${dashboardData.vessel.latitude}, ${dashboardData.vessel.longitude}
-Latest Vessel Data: ${formatAge(dashboardData.vessel.dataAgeSeconds)}
+Vessel Data: ${formatAge(dashboardData.vessel.dataAgeSeconds)}
 
 Warnings:
 ${
@@ -852,23 +401,16 @@ Checked: ${new Date().toLocaleString()}
 
     try {
         await navigator.clipboard.writeText(report);
-        alert("Status report copied");
+        alert("Report copied");
     } catch {
-        prompt("Copy status report:", report);
+        prompt("Copy report:", report);
     }
 }
-
-logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("adminToken");
-    window.location.href = "/admin";
-});
 
 refreshBtn.addEventListener("click", loadDashboard);
 copyReportBtn.addEventListener("click", copyStatusReport);
 
-verifyAdmin();
 loadDashboard();
-
 setInterval(loadDashboard, 60000);
 </script>
 

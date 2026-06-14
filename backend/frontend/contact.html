@@ -17,169 +17,201 @@
 
 <body>
 
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        ⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE
+<div class="top-bar">
+    ⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE
+</div>
+
+<header class="navbar">
+    <div class="nav-left">
+        <button id="menuBtn" class="icon-btn">☰</button>
+        <button id="searchBtn" class="icon-btn">⌕</button>
     </div>
 
-    <!-- NAVBAR -->
-    <header class="navbar">
-        <div class="nav-left">
-            <button id="menuBtn" class="icon-btn">☰</button>
-            <button id="searchBtn" class="icon-btn">⌕</button>
+    <div class="logo">
+        <a href="/">
+            <img src="/assets/logo.png" alt="Logo">
+        </a>
+    </div>
+
+    <div class="nav-right">
+        <button id="userBtn" class="icon-btn">👤</button>
+        <button id="cartBtn" class="icon-btn">🛒</button>
+    </div>
+</header>
+
+<section class="contact-hero">
+    <img src="/assets/boat.jpg" alt="Harbour" class="contact-hero-image">
+
+    <div class="contact-overlay"></div>
+
+    <div class="contact-content">
+        <p class="contact-label">GET IN TOUCH</p>
+
+        <h1>
+            Message the<br>
+            harbour team
+        </h1>
+
+        <p class="contact-sub">
+            Orders, enquiries, or collection questions — we’re here.
+        </p>
+    </div>
+</section>
+
+<section class="section contact-section">
+    <div class="contact-grid">
+
+        <div class="contact-form">
+            <h2>Send a message</h2>
+
+            <form id="contactForm">
+                <input id="contactName" type="text" placeholder="Your name" required>
+                <input id="contactEmail" type="email" placeholder="Your email" required>
+                <input id="contactPhone" type="tel" placeholder="Phone number optional">
+                <input id="contactSubject" type="text" placeholder="Subject optional">
+                <textarea id="contactMessage" placeholder="Your message" rows="6" required></textarea>
+
+                <button type="submit" class="hero-btn" id="contactSubmit">
+                    SEND MESSAGE
+                </button>
+
+                <p id="contactResponse" style="margin-top:16px;"></p>
+            </form>
         </div>
 
-        <div class="logo">
-            <a href="/">
-                <img src="/assets/logo.png" alt="Logo">
-            </a>
-        </div>
+        <div class="contact-info">
+            <h2>Contact Details</h2>
 
-        <div class="nav-right">
-            <button id="userBtn" class="icon-btn">👤</button>
-            <button id="cartBtn" class="icon-btn">🛒</button>
-        </div>
-    </header>
-
-    <!-- CONTACT HERO -->
-    <section class="contact-hero">
-
-        <img src="/assets/boat.jpg" alt="Harbour" class="contact-hero-image">
-
-        <div class="contact-overlay"></div>
-
-        <div class="contact-content">
-
-            <p class="contact-label">GET IN TOUCH</p>
-
-            <h1>
-                Message the<br>
-                harbour team
-            </h1>
-
-            <p class="contact-sub">
-                Orders, enquiries, or collection questions — we’re here.
+            <p>
+                <a href="tel:+447766234997" class="contact-phone">
+                    +44 7766 234 997
+                </a>
             </p>
 
+            <p>
+                Scarborough Harbour<br>
+                North Yorkshire, UK
+            </p>
+
+            <p>
+                Collection only — orders may take up to 2 weeks to arrive.
+            </p>
+
+            <h3>Socials</h3>
+
+            <p>
+                <a href="https://www.tiktok.com/@potsofplenty" target="_blank" rel="noopener noreferrer">TikTok</a><br>
+                <a href="https://www.facebook.com/p/Pots-of-Plenty-61578293768602/" target="_blank" rel="noopener noreferrer">Facebook</a><br>
+                <a href="https://youtube.com/@potsofplenty" target="_blank" rel="noopener noreferrer">YouTube</a>
+            </p>
         </div>
 
-    </section>
+    </div>
+</section>
 
-    <!-- CONTACT SECTION -->
-    <section class="section contact-section">
+<section class="contact-cta section">
+    <h2>Fresh from the sea daily</h2>
+    <p>Follow us online for live catches and updates.</p>
 
-        <div class="contact-grid">
+    <a href="/" class="outline-btn">
+        BACK TO HOME
+    </a>
+</section>
 
-            <!-- FORM -->
-            <div class="contact-form">
-
-                <h2>Send a message</h2>
-
-                <form>
-                    <input type="text" placeholder="Your name" required>
-                    <input type="email" placeholder="Your email" required>
-                    <textarea placeholder="Your message" rows="6" required></textarea>
-
-                    <button type="submit" class="hero-btn">
-                        SEND MESSAGE
-                    </button>
-                    <p style="color: red">This form does not currently work yet!</p>
-                </form>
-
-            </div>
-
-            <!-- INFO -->
-            <div class="contact-info">
-
-                <h2>Contact Details</h2>
-
-                <p>
-                    <a href="tel:+447766234997" class="contact-phone">
-                        +44 7766 234 997
-                    </a>
-                </p>
-
-                <p>
-                    Scarborough Harbour<br>
-                    North Yorkshire, UK
-                </p>
-
-                <p>
-                    Collection only — fresh catch daily.
-                </p>
-
-                <h3>Socials</h3>
-
-                <p>
-                    <a href="https://www.tiktok.com/@potsofplenty" target="_blank">TikTok</a><br>
-                    <a href="https://www.facebook.com/p/Pots-of-Plenty-61578293768602/" target="_blank">Facebook</a><br>
-                    <a href="https://youtube.com/@potsofplenty" target="_blank">YouTube</a>
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-    <!-- CTA -->
-    <section class="contact-cta section">
-
-        <h2>Fresh from the sea daily</h2>
-
-        <p>Follow us online for live catches and updates.</p>
-
-        <a href="/" class="outline-btn">
-            BACK TO HOME
-        </a>
-
-    </section>
-
-    <!-- SIDE MENU -->
-    <div class="side-menu" id="sideMenu">
-        <div class="menu-header">
-            <h2>Pots of Plenty</h2>
-            <button class="close-menu" id="closeMenu">×</button>
-        </div>
-
-        <nav class="menu-links">
-            <a href="/">Home</a>
-            <a href="/shop">Shop</a>
-            <a href="/about">About</a>
-            <a href="/contact">Contact</a>
-        </nav>
-
-        <div class="menu-footer">
-            <p>⚓ Scarborough Harbour</p>
-        </div>
+<div class="side-menu" id="sideMenu">
+    <div class="menu-header">
+        <h2>Pots of Plenty</h2>
+        <button class="close-menu" id="closeMenu">×</button>
     </div>
 
-    <div class="menu-overlay" id="menuOverlay"></div>
+    <nav class="menu-links">
+        <a href="/">Home</a>
+        <a href="/shop">Shop</a>
+        <a href="/track">Track Vessel</a>
+        <a href="/contact">Contact</a>
+    </nav>
 
-    <!-- CART -->
-    <div class="cart-panel" id="cartPanel">
-        <div class="cart-header">
-            <h2>Your Cart</h2>
-            <button class="close-cart" id="closeCart">×</button>
-        </div>
+    <div class="menu-footer">
+        <p>⚓ Scarborough Harbour</p>
+    </div>
+</div>
 
-        <div class="cart-items" id="cartItems">
-            <div class="empty-cart">Your cart is empty.</div>
-        </div>
+<div class="menu-overlay" id="menuOverlay"></div>
 
-        <div class="cart-footer">
-            <div class="cart-total" id="cartTotal">Total: £0.00</div>
-            <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
-        </div>
+<div class="cart-panel" id="cartPanel">
+    <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="close-cart" id="closeCart">×</button>
     </div>
 
-    <!-- SEARCH -->
-    <div class="search-overlay" id="searchBar">
-        <div class="search-box">
-            <input type="text" placeholder="Search products..." id="searchInput" />
-            <button class="search-submit" id="searchSubmit">→</button>
-        </div>
+    <div class="cart-items" id="cartItems">
+        <div class="empty-cart">Your cart is empty.</div>
     </div>
+
+    <div class="cart-footer">
+        <div class="cart-total" id="cartTotal">Total: £0.00</div>
+        <button class="checkout-btn" id="checkoutBtn">CHECKOUT</button>
+    </div>
+</div>
+
+<div class="search-overlay" id="searchBar">
+    <div class="search-box">
+        <input type="text" placeholder="Search products..." id="searchInput" />
+        <button class="search-submit" id="searchSubmit">→</button>
+    </div>
+</div>
+
+<script>
+const contactForm = document.getElementById("contactForm");
+const contactResponse = document.getElementById("contactResponse");
+const contactSubmit = document.getElementById("contactSubmit");
+
+contactForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    contactResponse.textContent = "";
+    contactSubmit.disabled = true;
+    contactSubmit.textContent = "SENDING...";
+
+    try {
+        const res = await fetch("/api/contact", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: document.getElementById("contactName").value,
+                email: document.getElementById("contactEmail").value,
+                phone: document.getElementById("contactPhone").value,
+                subject: document.getElementById("contactSubject").value,
+                message: document.getElementById("contactMessage").value
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            contactResponse.style.color = "#ff7777";
+            contactResponse.textContent = data.error || "Message could not be sent.";
+            return;
+        }
+
+        contactResponse.style.color = "#38d66b";
+        contactResponse.textContent = "Thanks — your message has been sent.";
+
+        contactForm.reset();
+
+    } catch (err) {
+        console.error(err);
+
+        contactResponse.style.color = "#ff7777";
+        contactResponse.textContent = "Message failed. Please call us instead.";
+    } finally {
+        contactSubmit.disabled = false;
+        contactSubmit.textContent = "SEND MESSAGE";
+    }
+});
+</script>
 
 </body>
 </html>

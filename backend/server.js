@@ -6,8 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fetch from "node-fetch";
 import WebSocket from "ws";
-
-const serverStartedAt = new Date();
+import fs from "fs";
 
 /* =========================
    ES MODULE FIX
@@ -33,6 +32,118 @@ const BASE_URL =
     "https://potsofplenty.uk";
 
 const app = express();
+
+const serverStartedAt = new Date();
+
+const adminDataPath = path.join(__dirname, "admin-data.json");
+
+function getDefaultAdminData() {
+    return {
+        orderStatuses: {},
+        messages: []
+    };
+}
+
+function readAdminData() {
+    try {
+        if (!fs.existsSync(adminDataPath)) {
+            const defaultData = getDefaultAdminData();
+            fs.writeFileSync(adminDataPath, JSON.stringify(defaultData, null, 2));
+            return defaultData;
+        }
+
+        const raw = fs.readFileSync(adminDataPath, "utf8");
+        const data = JSON.parse(raw);
+
+        return {
+            orderStatuses: data.orderStatuses || {},
+            messages: data.messages || []
+        };
+
+    } catch (err) {
+        console.error("Admin data read error:", err);
+        return getDefaultAdminData();
+    }
+}
+
+function writeAdminData(data) {
+    try {
+        fs.writeFileSync(adminDataPath, JSON.stringify(data, null, 2));
+    } catch (err) {
+        console.error("Admin data write error:", err);
+    }
+}
+
+function requireAdmin(req, res, next) {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+
+    if (!token || token !== process.env.ADMIN_TOKEN) {
+        return res.status(401).json({
+            success: false,
+            error: "Unauthorized"
+        });
+    }
+
+    next();
+}
+
+async function getRecentStripeOrders(limit = 25) {
+    const adminData = readAdminData();
+
+    const sessions = await stripe.checkout.sessions.list({
+        limit
+    });
+
+    const orders = await Promise.all(
+        sessions.data.map(async (session) => {
+            let items = [];
+
+            try {
+                const lineItems = await stripe.checkout.sessions.listLineItems(
+                    session.id,
+                    { limit: 50 }
+                );
+
+                items = lineItems.data.map((item) => ({
+                    name: item.description || "Item",
+                    quantity: item.quantity || 1,
+                    amount: item.amount_total || 0
+                }));
+            } catch (err) {
+                console.error("Line item fetch error:", err.message);
+            }
+
+            const savedStatus =
+                adminData.orderStatuses[session.id] || {};
+
+            const paymentIntent =
+                typeof session.payment_intent === "string"
+                    ? session.payment_intent
+                    : session.payment_intent?.id || "";
+
+            return {
+                id: session.id,
+                amount_total: session.amount_total || 0,
+                currency: session.currency || "gbp",
+                status: session.payment_status || "unknown",
+                payment_intent: paymentIntent,
+                customer_email: session.customer_details?.email || "No email",
+                customer_name: session.customer_details?.name || "No name",
+                phone: session.customer_details?.phone || "No phone",
+                created: session.created,
+                items,
+                admin: {
+                    fulfilment: savedStatus.fulfilment || "new",
+                    note: savedStatus.note || "",
+                    updatedAt: savedStatus.updatedAt || null
+                }
+            };
+        })
+    );
+
+    return orders;
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 console.log("Stripe key loaded:", !!process.env.STRIPE_SECRET_KEY);
@@ -165,32 +276,154 @@ function requireAdmin(req, res, next) {
 
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
     try {
-        const sessions = await stripe.checkout.sessions.list({
-            limit: 20,
-            expand: ["data.line_items"]
+        const orders = await getRecentStripeOrders(30);
+
+        res.json({
+            success: true,
+            orders
         });
 
-        const orders = sessions.data.map((session) => ({
-            id: session.id,
-            amount_total: session.amount_total,
-            currency: session.currency,
-            status: session.payment_status,
-            customer_email: session.customer_details?.email || "No email",
-            customer_name: session.customer_details?.name || "No name",
-            phone: session.customer_details?.phone || "No phone",
-            created: session.created,
-            items: session.line_items?.data?.map((item) => ({
-                name: item.description,
-                quantity: item.quantity,
-                amount: item.amount_total
-            })) || []
-        }));
-
-        res.json({ success: true, orders });
     } catch (err) {
         console.error("Admin orders error:", err);
-        res.status(500).json({ success: false, error: err.message });
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
     }
+});
+
+app.post("/api/admin/orders/:orderId/status", requireAdmin, (req, res) => {
+    const { orderId } = req.params;
+    const { fulfilment, note } = req.body;
+
+    const allowed = [
+        "new",
+        "packed",
+        "ready",
+        "collected",
+        "issue",
+        "refunded"
+    ];
+
+    if (!allowed.includes(fulfilment)) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid fulfilment status"
+        });
+    }
+
+    const adminData = readAdminData();
+
+    adminData.orderStatuses[orderId] = {
+        fulfilment,
+        note: note || "",
+        updatedAt: new Date().toISOString()
+    };
+
+    writeAdminData(adminData);
+
+    res.json({
+        success: true,
+        order: adminData.orderStatuses[orderId]
+    });
+});
+
+app.post("/api/contact", (req, res) => {
+    try {
+        const { name, email, phone, subject, message } = req.body;
+
+        if (!name || !email || !message) {
+            return res.status(400).json({
+                success: false,
+                error: "Name, email and message are required"
+            });
+        }
+
+        const adminData = readAdminData();
+
+        const newMessage = {
+            id: `msg_${Date.now()}`,
+            name: String(name).trim(),
+            email: String(email).trim(),
+            phone: phone ? String(phone).trim() : "",
+            subject: subject ? String(subject).trim() : "Website enquiry",
+            message: String(message).trim(),
+            read: false,
+            createdAt: new Date().toISOString()
+        };
+
+        adminData.messages.unshift(newMessage);
+
+        writeAdminData(adminData);
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+        console.error("Contact form error:", err);
+
+        res.status(500).json({
+            success: false,
+            error: "Message could not be sent"
+        });
+    }
+});
+
+app.get("/api/admin/messages", requireAdmin, (req, res) => {
+    const adminData = readAdminData();
+
+    res.json({
+        success: true,
+        messages: adminData.messages || []
+    });
+});
+
+app.post("/api/admin/messages/:messageId/read", requireAdmin, (req, res) => {
+    const { messageId } = req.params;
+    const { read } = req.body;
+
+    const adminData = readAdminData();
+
+    adminData.messages = adminData.messages.map((message) => {
+        if (message.id === messageId) {
+            return {
+                ...message,
+                read: Boolean(read)
+            };
+        }
+
+        return message;
+    });
+
+    writeAdminData(adminData);
+
+    res.json({
+        success: true
+    });
+});
+
+app.delete("/api/admin/messages/:messageId", requireAdmin, (req, res) => {
+    const { messageId } = req.params;
+
+    const adminData = readAdminData();
+
+    adminData.messages = adminData.messages.filter((message) => {
+        return message.id !== messageId;
+    });
+
+    writeAdminData(adminData);
+
+    res.json({
+        success: true
+    });
+});
+
+app.get("/api/admin/verify", requireAdmin, (req, res) => {
+    res.json({
+        success: true
+    });
 });
 
 app.get("/api/admin/products", requireAdmin, (req, res) => {
@@ -393,195 +626,197 @@ app.get("/api/admin/verify", requireAdmin, (req, res) => {
 ========================= */
 
 app.get("/api/admin/dashboard", requireAdmin, async (req, res) => {
-    const now = new Date();
+    try {
+        const now = new Date();
+        const adminData = readAdminData();
 
-    function getAgeSeconds(dateValue) {
-        if (!dateValue) return null;
+        let orders = [];
+        let stripeApiConnected = false;
+        let stripeMessage = "Stripe not checked";
 
-        const time = new Date(dateValue).getTime();
+        const warnings = [];
 
-        if (Number.isNaN(time)) return null;
+        if (!process.env.STRIPE_SECRET_KEY) {
+            warnings.push("Stripe secret key is missing.");
+            stripeMessage = "Stripe key missing";
+        } else {
+            try {
+                orders = await getRecentStripeOrders(12);
+                stripeApiConnected = true;
+                stripeMessage = "Stripe API connected";
+            } catch (err) {
+                stripeApiConnected = false;
+                stripeMessage = err.message;
+                warnings.push("Stripe API is not responding correctly.");
+            }
+        }
 
-        return Math.floor((Date.now() - time) / 1000);
-    }
+        function getAISState() {
+            if (
+                typeof aisStreamSocket === "undefined" ||
+                !aisStreamSocket
+            ) {
+                return "Not connected";
+            }
 
-    function getAISState() {
+            const states = {
+                [WebSocket.CONNECTING]: "Connecting",
+                [WebSocket.OPEN]: "Open",
+                [WebSocket.CLOSING]: "Closing",
+                [WebSocket.CLOSED]: "Closed"
+            };
+
+            return states[aisStreamSocket.readyState] || "Unknown";
+        }
+
+        function getAgeSeconds(dateValue) {
+            if (!dateValue) return null;
+
+            const time = new Date(dateValue).getTime();
+
+            if (Number.isNaN(time)) return null;
+
+            return Math.floor((Date.now() - time) / 1000);
+        }
+
+        const paidOrders = orders.filter((order) => {
+            return order.status === "paid";
+        });
+
+        const unpaidOrders = orders.filter((order) => {
+            return order.status !== "paid";
+        });
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        const todayUnix = Math.floor(todayStart.getTime() / 1000);
+
+        const paidOrdersToday = paidOrders.filter((order) => {
+            return Number(order.created || 0) >= todayUnix;
+        });
+
+        const recentPaidRevenue = paidOrders.reduce((total, order) => {
+            return total + Number(order.amount_total || 0);
+        }, 0);
+
+        const todayPaidRevenue = paidOrdersToday.reduce((total, order) => {
+            return total + Number(order.amount_total || 0);
+        }, 0);
+
+        const vesselData =
+            typeof latestVesselData !== "undefined"
+                ? latestVesselData
+                : null;
+
+        const vesselAgeSeconds = getAgeSeconds(
+            vesselData?.receivedAt ||
+            vesselData?.timestamp
+        );
+
+        const aisConnection = getAISState();
+
+        if (!process.env.AISSTREAM_API_KEY) {
+            warnings.push("AISStream API key is missing.");
+        }
+
+        if (process.env.AISSTREAM_API_KEY && aisConnection !== "Open") {
+            warnings.push("AISStream WebSocket is not currently open.");
+        }
+
         if (
-            typeof aisStreamSocket === "undefined" ||
-            !aisStreamSocket
+            vesselAgeSeconds !== null &&
+            vesselAgeSeconds > 3600
         ) {
-            return "Not connected";
+            warnings.push("Latest vessel position is over 1 hour old.");
         }
 
-        const states = {
-            [WebSocket.CONNECTING]: "Connecting",
-            [WebSocket.OPEN]: "Open",
-            [WebSocket.CLOSING]: "Closing",
-            [WebSocket.CLOSED]: "Closed"
-        };
-
-        return states[aisStreamSocket.readyState] || "Unknown";
-    }
-
-    const warnings = [];
-
-    let stripeApiConnected = false;
-    let stripeMessage = "Stripe not checked";
-    let orders = [];
-
-    if (!process.env.STRIPE_SECRET_KEY) {
-        warnings.push("Stripe secret key is missing.");
-        stripeMessage = "Stripe key missing";
-    } else {
-        try {
-            const sessions = await stripe.checkout.sessions.list({
-                limit: 20,
-                expand: ["data.line_items"]
-            });
-
-            stripeApiConnected = true;
-            stripeMessage = "Stripe API connected";
-
-            orders = sessions.data.map((session) => ({
-                id: session.id,
-                amount_total: session.amount_total || 0,
-                currency: session.currency || "gbp",
-                status: session.payment_status || "unknown",
-                customer_email: session.customer_details?.email || "No email",
-                customer_name: session.customer_details?.name || "No name",
-                phone: session.customer_details?.phone || "No phone",
-                created: session.created,
-                items: session.line_items?.data?.map((item) => ({
-                    name: item.description,
-                    quantity: item.quantity,
-                    amount: item.amount_total
-                })) || []
-            }));
-        } catch (err) {
-            stripeApiConnected = false;
-            stripeMessage = err.message;
-            warnings.push("Stripe API is not responding correctly.");
+        if (!process.env.BASE_URL) {
+            warnings.push("BASE_URL is not set in Railway variables.");
         }
+
+        const unreadMessages = adminData.messages.filter((message) => {
+            return !message.read;
+        });
+
+        const siteHealthy =
+            stripeApiConnected &&
+            !!process.env.STRIPE_SECRET_KEY &&
+            !!process.env.BASE_URL &&
+            warnings.length === 0;
+
+        res.json({
+            success: true,
+
+            overview: {
+                siteHealthy,
+                totalRecentOrders: orders.length,
+                paidRecentOrders: paidOrders.length,
+                unpaidRecentOrders: unpaidOrders.length,
+                paidOrdersToday: paidOrdersToday.length,
+                recentPaidRevenue,
+                todayPaidRevenue,
+                unreadMessages: unreadMessages.length,
+                totalMessages: adminData.messages.length
+            },
+
+            server: {
+                status: "online",
+                uptimeSeconds: Math.floor(process.uptime()),
+                startedAt: serverStartedAt.toISOString(),
+                checkedAt: now.toISOString(),
+                baseUrl: BASE_URL,
+                nodeEnv: process.env.NODE_ENV || "not set"
+            },
+
+            stripe: {
+                keyLoaded: !!process.env.STRIPE_SECRET_KEY,
+                apiConnected: stripeApiConnected,
+                message: stripeMessage
+            },
+
+            ais: {
+                keyLoaded: !!process.env.AISSTREAM_API_KEY,
+                connection: aisConnection
+            },
+
+            vessel: {
+                name: vesselData?.name || "POTS OF PLENTY",
+                mmsi: vesselData?.mmsi || "235059314",
+                callsign: vesselData?.callsign || "2AGB7",
+                latitude: vesselData?.latitude || null,
+                longitude: vesselData?.longitude || null,
+                timestamp: vesselData?.timestamp || null,
+                receivedAt: vesselData?.receivedAt || null,
+                dataAgeSeconds: vesselAgeSeconds,
+                sog: vesselData?.sog ?? null,
+                cog: vesselData?.cog ?? null,
+                heading: vesselData?.heading ?? null
+            },
+
+            products: {
+                total: 4,
+                live: 4,
+                hoodies: 2,
+                tshirts: 2,
+                standardHoodiePrice: 34.99,
+                premiumHoodiePrice: 49.99,
+                tshirtPrice: 24.99
+            },
+
+            recentOrders: orders.slice(0, 5),
+            recentMessages: adminData.messages.slice(0, 5),
+            warnings
+        });
+
+    } catch (err) {
+        console.error("Admin dashboard error:", err);
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
     }
-
-    const paidOrders = orders.filter((order) => order.status === "paid");
-    const unpaidOrders = orders.filter((order) => order.status !== "paid");
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-
-    const todayUnix = Math.floor(todayStart.getTime() / 1000);
-
-    const paidOrdersToday = paidOrders.filter((order) => {
-        return Number(order.created || 0) >= todayUnix;
-    });
-
-    const recentPaidRevenue = paidOrders.reduce((total, order) => {
-        return total + Number(order.amount_total || 0);
-    }, 0);
-
-    const todayPaidRevenue = paidOrdersToday.reduce((total, order) => {
-        return total + Number(order.amount_total || 0);
-    }, 0);
-
-    const aisConnection = getAISState();
-
-    const vesselData =
-        typeof latestVesselData !== "undefined"
-            ? latestVesselData
-            : null;
-
-    const vesselAgeSeconds = getAgeSeconds(
-        vesselData?.receivedAt ||
-        vesselData?.timestamp
-    );
-
-    if (!process.env.AISSTREAM_API_KEY) {
-        warnings.push("AISStream API key is missing.");
-    }
-
-    if (process.env.AISSTREAM_API_KEY && aisConnection !== "Open") {
-        warnings.push("AISStream WebSocket is not currently open.");
-    }
-
-    if (
-        vesselAgeSeconds !== null &&
-        vesselAgeSeconds > 3600
-    ) {
-        warnings.push("Latest vessel position is over 1 hour old.");
-    }
-
-    if (!process.env.BASE_URL) {
-        warnings.push("BASE_URL is not set in Railway variables.");
-    }
-
-    const siteHealthy =
-        stripeApiConnected &&
-        !!process.env.STRIPE_SECRET_KEY &&
-        !!process.env.BASE_URL &&
-        warnings.length === 0;
-
-    res.json({
-        success: true,
-
-        overview: {
-            siteHealthy,
-            totalRecentOrders: orders.length,
-            paidRecentOrders: paidOrders.length,
-            unpaidRecentOrders: unpaidOrders.length,
-            paidOrdersToday: paidOrdersToday.length,
-            recentPaidRevenue,
-            todayPaidRevenue
-        },
-
-        server: {
-            status: "online",
-            uptimeSeconds: Math.floor(process.uptime()),
-            startedAt: serverStartedAt.toISOString(),
-            checkedAt: now.toISOString(),
-            baseUrl: BASE_URL,
-            nodeEnv: process.env.NODE_ENV || "not set"
-        },
-
-        stripe: {
-            keyLoaded: !!process.env.STRIPE_SECRET_KEY,
-            apiConnected: stripeApiConnected,
-            message: stripeMessage
-        },
-
-        ais: {
-            keyLoaded: !!process.env.AISSTREAM_API_KEY,
-            connection: aisConnection
-        },
-
-        vessel: {
-            name: vesselData?.name || "POTS OF PLENTY",
-            mmsi: vesselData?.mmsi || "235059314",
-            callsign: vesselData?.callsign || "2AGB7",
-            latitude: vesselData?.latitude || null,
-            longitude: vesselData?.longitude || null,
-            timestamp: vesselData?.timestamp || null,
-            receivedAt: vesselData?.receivedAt || null,
-            dataAgeSeconds: vesselAgeSeconds,
-            sog: vesselData?.sog ?? null,
-            cog: vesselData?.cog ?? null,
-            heading: vesselData?.heading ?? null
-        },
-
-        products: {
-            total: 4,
-            live: 4,
-            hoodies: 2,
-            tshirts: 2,
-            standardHoodiePrice: 34.99,
-            premiumHoodiePrice: 49.99,
-            tshirtPrice: 24.99
-        },
-
-        recentOrders: orders.slice(0, 5),
-
-        warnings
-    });
 });
 
 /* =========================
@@ -608,7 +843,8 @@ const pages = ["shop",
                "admin-dashboard", 
                "admin-orders", 
                "admin-products", 
-               "admin-status"
+               "admin-status",
+               "admin-messages"
             ];
 
 pages.forEach((page) => {

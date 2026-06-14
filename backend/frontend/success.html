@@ -5,59 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Payment Successful — Pots of Plenty</title>
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/style.css" />
+
     <style>
         body {
-            font-family: Inter, sans-serif;
-            background: #0f0f0f;
-            color: white;
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.82)),
+                url("/assets/hero.jpg") center/cover no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            padding: 30px;
+        }
+
+        .checkout-result {
+            width: 100%;
+            max-width: 720px;
+            padding: 42px;
+            border-radius: 24px;
+            background: rgba(2,8,22,0.88);
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 30px 90px rgba(0,0,0,0.45);
             text-align: center;
+            backdrop-filter: blur(16px);
         }
 
-        .box {
-            max-width: 500px;
-            padding: 40px;
-            background: #1a1a1a;
+        .checkout-result img {
+            width: 110px;
+            margin: 0 auto 22px;
+        }
+
+        .checkout-result h1 {
+            font-size: 48px;
+            margin-bottom: 14px;
+            color: #38d66b;
+        }
+
+        .checkout-result p {
+            color: rgba(255,255,255,0.78);
+            line-height: 1.7;
+            margin-bottom: 18px;
+        }
+
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .result-info {
+            margin-top: 26px;
+            padding: 18px;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        h1 {
-            color: #4ade80;
-            margin-bottom: 10px;
-        }
+        @media (max-width: 700px) {
+            .checkout-result {
+                padding: 30px 22px;
+            }
 
-        p {
-            opacity: 0.8;
-            margin-bottom: 25px;
-        }
-
-        a {
-            display: inline-block;
-            padding: 12px 20px;
-            background: white;
-            color: black;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        a:hover {
-            opacity: 0.85;
+            .checkout-result h1 {
+                font-size: 36px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="box">
-        <h1>Payment Successful 🎉</h1>
-        <p>Thanks for your order. Your payment has been received successfully.</p>
-        <a href="/shop">Continue Shopping</a>
+
+<div class="checkout-result">
+    <a href="/">
+        <img src="/assets/logo.png" alt="Pots of Plenty">
+    </a>
+
+    <h1>Payment Successful 🎉</h1>
+
+    <p>
+        Thanks for your order. Your payment has been received successfully.
+    </p>
+
+    <div class="result-info">
+        <p>
+            Orders can take up to 2 weeks to arrive. We’ll use the details provided at checkout to contact you if needed.
+        </p>
+
+        <p>
+            Collection is from Scarborough Harbour, North Yorkshire.
+        </p>
     </div>
+
+    <div class="result-actions">
+        <a href="/shop" class="hero-btn">Continue Shopping</a>
+        <a href="/contact" class="outline-btn">Contact Us</a>
+        <a href="/track" class="outline-btn">Track The Vessel</a>
+    </div>
+</div>
+
+<script>
+localStorage.removeItem("cart");
+</script>
+
 </body>
 </html>

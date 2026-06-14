@@ -3,291 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Orders — Pots of Plenty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="/style.css">
-
-    <style>
-        .admin-orders-wrap {
-            width: 92%;
-            max-width: 1400px;
-            margin: auto;
-            padding: 60px 0;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 35px;
-            flex-wrap: wrap;
-        }
-
-        .admin-header h1 {
-            font-size: 46px;
-            margin-bottom: 8px;
-        }
-
-        .admin-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(160px, 1fr));
-            gap: 16px;
-            margin: 30px 0;
-        }
-
-        .summary-card {
-            padding: 20px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .summary-card span {
-            display: block;
-            opacity: .7;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .summary-card strong {
-            font-size: 28px;
-        }
-
-        .admin-controls {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
-            gap: 12px;
-            margin: 30px 0;
-        }
-
-        .admin-controls input,
-        .admin-controls select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.08);
-            color: white;
-            font-size: 15px;
-        }
-
-        .admin-controls option {
-            color: white;
-        }
-
-        .orders-table-wrap {
-            overflow-x: auto;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.04);
-        }
-
-        table.orders-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1000px;
-        }
-
-        .orders-table th,
-        .orders-table td {
-            padding: 16px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            vertical-align: top;
-        }
-
-        .orders-table th {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            opacity: .65;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .orders-table tr.paid-row {
-            border-left: 5px solid #38d66b;
-        }
-
-        .orders-table tr.unpaid-row {
-            border-left: 5px solid #ff5b5b;
-        }
-
-        .orders-table tr.pending-row {
-            border-left: 5px solid #ffc857;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: .04em;
-            text-transform: uppercase;
-        }
-
-        .status-paid {
-            color: #071b0d;
-            background: #38d66b;
-        }
-
-        .status-unpaid {
-            color: white;
-            background: #d63838;
-        }
-
-        .status-pending {
-            color: #1d1600;
-            background: #ffc857;
-        }
-
-        .order-id {
-            font-size: 12px;
-            opacity: .55;
-            word-break: break-all;
-            margin-top: 6px;
-        }
-
-        .customer-name {
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .muted {
-            opacity: .7;
-            font-size: 14px;
-        }
-
-        .items-box {
-            display: none;
-            padding: 16px;
-            margin-top: 12px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.25);
-        }
-
-        .items-box.open {
-            display: block;
-        }
-
-        .small-btn {
-            padding: 10px 14px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.08);
-            color: white;
-            cursor: pointer;
-            font-weight: 800;
-        }
-
-        .small-btn:hover {
-            background: rgba(255,255,255,0.16);
-        }
-
-        .empty-state,
-        .loading-state {
-            padding: 35px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        @media (max-width: 900px) {
-            .admin-summary-grid,
-            .admin-controls {
-                grid-template-columns: 1fr;
-            }
-
-            .admin-header h1 {
-                font-size: 36px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/admin.css">
+    <script src="/admin-shell.js" defer></script>
 </head>
 
 <body>
 
-<section class="admin-orders-wrap">
-
-    <div class="admin-header">
-        <div>
-            <h1>Orders</h1>
-            <p style="opacity:.7;">View, filter and sort recent Stripe checkout sessions.</p>
-        </div>
-
-        <a href="/admin-dashboard" class="hero-btn">
-            ← Back to Dashboard
-        </a>
+<header class="admin-header">
+    <div>
+        <h1>Orders</h1>
+        <p>View, filter, manage fulfilment and contact customers.</p>
     </div>
 
-    <div class="admin-summary-grid">
-        <div class="summary-card">
-            <span>Total Orders</span>
-            <strong id="summaryTotal">0</strong>
-        </div>
+    <div class="admin-actions">
+        <button class="admin-btn" id="refreshBtn">Refresh</button>
+        <button class="admin-btn" id="copyVisibleBtn">Copy Visible Orders</button>
+        <a href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener noreferrer" class="admin-btn primary">Open Stripe</a>
+    </div>
+</header>
 
-        <div class="summary-card">
-            <span>Paid Orders</span>
-            <strong id="summaryPaid">0</strong>
-        </div>
-
-        <div class="summary-card">
-            <span>Unpaid / Incomplete</span>
-            <strong id="summaryUnpaid">0</strong>
-        </div>
-
-        <div class="summary-card">
-            <span>Paid Revenue</span>
-            <strong id="summaryRevenue">£0.00</strong>
-        </div>
+<div class="admin-grid-4">
+    <div class="admin-card">
+        <span>Total Orders</span>
+        <strong id="summaryTotal">0</strong>
     </div>
 
-    <div class="admin-controls">
-        <input
-            type="search"
-            id="searchInput"
-            placeholder="Search by customer, email, phone, item or order ID..."
-        >
-
-        <select id="statusFilter">
-            <option value="all">All orders</option>
-            <option value="paid">Paid only</option>
-            <option value="unpaid">Unpaid only</option>
-            <option value="pending">Pending / other</option>
-        </select>
-
-        <select id="sortSelect">
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="highest">Highest total</option>
-            <option value="lowest">Lowest total</option>
-            <option value="status">Payment status</option>
-        </select>
-
-        <button class="small-btn" id="refreshBtn">
-            Refresh
-        </button>
+    <div class="admin-card status-good">
+        <span>Paid Orders</span>
+        <strong id="summaryPaid">0</strong>
     </div>
 
-    <div id="orders">
-        <div class="loading-state">Loading orders...</div>
+    <div class="admin-card status-warning">
+        <span>Unpaid / Incomplete</span>
+        <strong id="summaryUnpaid">0</strong>
     </div>
 
-</section>
+    <div class="admin-card">
+        <span>Paid Revenue</span>
+        <strong id="summaryRevenue">£0.00</strong>
+    </div>
+</div>
+
+<div class="admin-controls">
+    <input type="search" id="searchInput" placeholder="Search customer, email, phone, item or order ID...">
+
+    <select id="paymentFilter">
+        <option value="all">All payments</option>
+        <option value="paid">Paid only</option>
+        <option value="unpaid">Unpaid only</option>
+        <option value="pending">Pending / other</option>
+    </select>
+
+    <select id="fulfilmentFilter">
+        <option value="all">All fulfilment</option>
+        <option value="new">New</option>
+        <option value="packed">Packed</option>
+        <option value="ready">Ready for collection</option>
+        <option value="collected">Collected</option>
+        <option value="issue">Issue</option>
+        <option value="refunded">Refunded</option>
+    </select>
+
+    <select id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="highest">Highest total</option>
+        <option value="lowest">Lowest total</option>
+        <option value="payment">Payment status</option>
+        <option value="fulfilment">Fulfilment status</option>
+    </select>
+
+    <button class="admin-btn" id="clearFiltersBtn">Clear</button>
+</div>
+
+<div id="orders">
+    <div class="admin-loading">Loading orders...</div>
+</div>
 
 <script>
-const token = localStorage.getItem("adminToken");
-
-if (!token) {
-    window.location.href = "/admin";
-}
-
 let allOrders = [];
 
 const ordersContainer = document.getElementById("orders");
 const searchInput = document.getElementById("searchInput");
-const statusFilter = document.getElementById("statusFilter");
+const paymentFilter = document.getElementById("paymentFilter");
+const fulfilmentFilter = document.getElementById("fulfilmentFilter");
 const sortSelect = document.getElementById("sortSelect");
 const refreshBtn = document.getElementById("refreshBtn");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+const copyVisibleBtn = document.getElementById("copyVisibleBtn");
 
 function escapeHTML(value) {
     return String(value ?? "")
@@ -299,16 +105,13 @@ function escapeHTML(value) {
 }
 
 function moneyFromPence(value) {
-    const amount = Number(value || 0) / 100;
-    return `£${amount.toFixed(2)}`;
+    return `£${(Number(value || 0) / 100).toFixed(2)}`;
 }
 
-function getOrderStatus(order) {
+function getPaymentStatus(order) {
     const status = String(order.status || "").toLowerCase();
 
-    if (status === "paid") {
-        return "paid";
-    }
+    if (status === "paid") return "paid";
 
     if (
         status === "unpaid" ||
@@ -321,41 +124,37 @@ function getOrderStatus(order) {
     return "pending";
 }
 
-function getStatusLabel(order) {
-    const status = getOrderStatus(order);
+function getFulfilment(order) {
+    return order.admin?.fulfilment || "new";
+}
+
+function paymentBadge(order) {
+    const status = getPaymentStatus(order);
 
     if (status === "paid") {
-        return "Paid";
+        return `<span class="admin-badge badge-good">Paid</span>`;
     }
 
     if (status === "unpaid") {
-        return "Not Paid";
+        return `<span class="admin-badge badge-bad">Not Paid</span>`;
     }
 
-    return escapeHTML(order.status || "Pending");
+    return `<span class="admin-badge badge-warning">${escapeHTML(order.status || "Pending")}</span>`;
 }
 
-function getStatusClass(order) {
-    const status = getOrderStatus(order);
+function fulfilmentBadge(status) {
+    if (status === "packed") return `<span class="admin-badge badge-warning">Packed</span>`;
+    if (status === "ready") return `<span class="admin-badge badge-good">Ready</span>`;
+    if (status === "collected") return `<span class="admin-badge badge-good">Collected</span>`;
+    if (status === "issue") return `<span class="admin-badge badge-bad">Issue</span>`;
+    if (status === "refunded") return `<span class="admin-badge badge-bad">Refunded</span>`;
 
-    if (status === "paid") return "status-paid";
-    if (status === "unpaid") return "status-unpaid";
-
-    return "status-pending";
-}
-
-function getRowClass(order) {
-    const status = getOrderStatus(order);
-
-    if (status === "paid") return "paid-row";
-    if (status === "unpaid") return "unpaid-row";
-
-    return "pending-row";
+    return `<span class="admin-badge badge-neutral">New</span>`;
 }
 
 function updateSummary() {
-    const paidOrders = allOrders.filter(order => getOrderStatus(order) === "paid");
-    const unpaidOrders = allOrders.filter(order => getOrderStatus(order) !== "paid");
+    const paidOrders = allOrders.filter((order) => getPaymentStatus(order) === "paid");
+    const unpaidOrders = allOrders.filter((order) => getPaymentStatus(order) !== "paid");
 
     const paidRevenue = paidOrders.reduce((sum, order) => {
         return sum + Number(order.amount_total || 0);
@@ -369,7 +168,7 @@ function updateSummary() {
 
 function getSearchText(order) {
     const itemText = Array.isArray(order.items)
-        ? order.items.map(item => item.name).join(" ")
+        ? order.items.map((item) => item.name).join(" ")
         : "";
 
     return `
@@ -378,47 +177,41 @@ function getSearchText(order) {
         ${order.customer_email}
         ${order.phone}
         ${order.status}
+        ${getFulfilment(order)}
+        ${order.admin?.note || ""}
         ${itemText}
     `.toLowerCase();
 }
 
-function getFilteredAndSortedOrders() {
+function getFilteredOrders() {
     const search = searchInput.value.trim().toLowerCase();
-    const filter = statusFilter.value;
+    const payment = paymentFilter.value;
+    const fulfilment = fulfilmentFilter.value;
     const sort = sortSelect.value;
 
     let orders = [...allOrders];
 
     if (search) {
-        orders = orders.filter(order => {
+        orders = orders.filter((order) => {
             return getSearchText(order).includes(search);
         });
     }
 
-    if (filter !== "all") {
-        orders = orders.filter(order => getOrderStatus(order) === filter);
+    if (payment !== "all") {
+        orders = orders.filter((order) => getPaymentStatus(order) === payment);
+    }
+
+    if (fulfilment !== "all") {
+        orders = orders.filter((order) => getFulfilment(order) === fulfilment);
     }
 
     orders.sort((a, b) => {
-        if (sort === "newest") {
-            return Number(b.created || 0) - Number(a.created || 0);
-        }
-
-        if (sort === "oldest") {
-            return Number(a.created || 0) - Number(b.created || 0);
-        }
-
-        if (sort === "highest") {
-            return Number(b.amount_total || 0) - Number(a.amount_total || 0);
-        }
-
-        if (sort === "lowest") {
-            return Number(a.amount_total || 0) - Number(b.amount_total || 0);
-        }
-
-        if (sort === "status") {
-            return getOrderStatus(a).localeCompare(getOrderStatus(b));
-        }
+        if (sort === "newest") return Number(b.created || 0) - Number(a.created || 0);
+        if (sort === "oldest") return Number(a.created || 0) - Number(b.created || 0);
+        if (sort === "highest") return Number(b.amount_total || 0) - Number(a.amount_total || 0);
+        if (sort === "lowest") return Number(a.amount_total || 0) - Number(b.amount_total || 0);
+        if (sort === "payment") return getPaymentStatus(a).localeCompare(getPaymentStatus(b));
+        if (sort === "fulfilment") return getFulfilment(a).localeCompare(getFulfilment(b));
 
         return 0;
     });
@@ -426,140 +219,252 @@ function getFilteredAndSortedOrders() {
     return orders;
 }
 
+function stripeLink(order) {
+    if (order.payment_intent) {
+        return `https://dashboard.stripe.com/payments/${encodeURIComponent(order.payment_intent)}`;
+    }
+
+    return "https://dashboard.stripe.com/payments";
+}
+
+function renderItems(order) {
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    if (items.length === 0) {
+        return `<p class="admin-muted">No item data found.</p>`;
+    }
+
+    return items.map((item) => `
+        <p>
+            <strong>${escapeHTML(item.quantity || 1)} × ${escapeHTML(item.name || "Item")}</strong><br>
+            <span class="admin-muted">${moneyFromPence(item.amount)}</span>
+        </p>
+    `).join("");
+}
+
 function renderOrders() {
     updateSummary();
 
-    const orders = getFilteredAndSortedOrders();
+    const orders = getFilteredOrders();
 
     if (orders.length === 0) {
         ordersContainer.innerHTML = `
-            <div class="empty-state">
-                No orders match your current filter.
+            <div class="admin-empty">
+                No orders match your current filters.
             </div>
         `;
         return;
     }
 
     ordersContainer.innerHTML = `
-        <div class="orders-table-wrap">
-            <table class="orders-table">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Payment</th>
                         <th>Customer</th>
                         <th>Total</th>
+                        <th>Fulfilment</th>
                         <th>Date</th>
-                        <th>Items</th>
-                        <th>Details</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    ${orders.map((order, index) => {
-                        const safeName = escapeHTML(order.customer_name || "No name");
-                        const safeEmail = escapeHTML(order.customer_email || "No email");
-                        const safePhone = escapeHTML(order.phone || "No phone");
-                        const safeId = escapeHTML(order.id || "No ID");
+                    ${orders.map((order) => `
+                        <tr>
+                            <td>
+                                ${paymentBadge(order)}
+                                <div class="admin-muted" style="font-size:11px;margin-top:6px;word-break:break-all;">
+                                    ${escapeHTML(order.id)}
+                                </div>
+                            </td>
 
-                        const items = Array.isArray(order.items)
-                            ? order.items
-                            : [];
+                            <td>
+                                <strong>${escapeHTML(order.customer_name || "No name")}</strong>
+                                <div class="admin-muted">${escapeHTML(order.customer_email || "No email")}</div>
+                                <div class="admin-muted">${escapeHTML(order.phone || "No phone")}</div>
+                            </td>
 
-                        return `
-                            <tr class="${getRowClass(order)}">
-                                <td>
-                                    <span class="status-badge ${getStatusClass(order)}">
-                                        ${getStatusLabel(order)}
-                                    </span>
-                                    <div class="order-id">${safeId}</div>
-                                </td>
+                            <td>
+                                <strong>${moneyFromPence(order.amount_total)}</strong>
+                            </td>
 
-                                <td>
-                                    <div class="customer-name">${safeName}</div>
-                                    <div class="muted">${safeEmail}</div>
-                                    <div class="muted">${safePhone}</div>
-                                </td>
+                            <td>
+                                ${fulfilmentBadge(getFulfilment(order))}
+                            </td>
 
-                                <td>
-                                    <strong>${moneyFromPence(order.amount_total)}</strong>
-                                </td>
-
-                                <td>
-                                    ${order.created
+                            <td>
+                                ${
+                                    order.created
                                         ? new Date(order.created * 1000).toLocaleString()
-                                        : "Unknown date"
-                                    }
-                                </td>
+                                        : "Unknown"
+                                }
+                            </td>
 
-                                <td>
-                                    <strong>${items.length}</strong>
-                                    item${items.length === 1 ? "" : "s"}
-                                </td>
+                            <td>
+                                <button class="admin-small-btn view-details" data-id="${escapeHTML(order.id)}">
+                                    Details
+                                </button>
 
-                                <td>
-                                    <button class="small-btn" onclick="toggleOrderDetails(${index})">
-                                        View Items
-                                    </button>
+                                <div class="admin-detail-box" id="details-${escapeHTML(order.id)}">
+                                    <h3>Items</h3>
+                                    ${renderItems(order)}
 
-                                    <div class="items-box" id="items-${index}">
-                                        ${
-                                            items.length
-                                            ? items.map(item => `
-                                                <p>
-                                                    <strong>${escapeHTML(item.quantity || 1)} × ${escapeHTML(item.name || "Item")}</strong>
-                                                    <br>
-                                                    <span class="muted">${moneyFromPence(item.amount)}</span>
-                                                </p>
-                                            `).join("")
-                                            : "<p>No item data found.</p>"
-                                        }
+                                    <h3 style="margin-top:18px;">Fulfilment</h3>
+
+                                    <select class="admin-input fulfilment-select" data-id="${escapeHTML(order.id)}">
+                                        <option value="new" ${getFulfilment(order) === "new" ? "selected" : ""}>New order</option>
+                                        <option value="packed" ${getFulfilment(order) === "packed" ? "selected" : ""}>Packed</option>
+                                        <option value="ready" ${getFulfilment(order) === "ready" ? "selected" : ""}>Ready for collection</option>
+                                        <option value="collected" ${getFulfilment(order) === "collected" ? "selected" : ""}>Collected</option>
+                                        <option value="issue" ${getFulfilment(order) === "issue" ? "selected" : ""}>Issue</option>
+                                        <option value="refunded" ${getFulfilment(order) === "refunded" ? "selected" : ""}>Refunded</option>
+                                    </select>
+
+                                    <textarea
+                                        class="admin-textarea order-note"
+                                        data-id="${escapeHTML(order.id)}"
+                                        placeholder="Internal order note..."
+                                        style="margin-top:10px;"
+                                    >${escapeHTML(order.admin?.note || "")}</textarea>
+
+                                    <div class="admin-actions" style="margin-top:12px;">
+                                        <button class="admin-small-btn save-status" data-id="${escapeHTML(order.id)}">
+                                            Save Status
+                                        </button>
+
+                                        <a class="admin-small-btn" href="tel:${escapeHTML(order.phone || "")}">
+                                            Call
+                                        </a>
+
+                                        <a class="admin-small-btn" href="mailto:${escapeHTML(order.customer_email || "")}">
+                                            Email
+                                        </a>
+
+                                        <a class="admin-small-btn" href="${stripeLink(order)}" target="_blank" rel="noopener noreferrer">
+                                            Stripe
+                                        </a>
+
+                                        <button class="admin-small-btn copy-summary" data-id="${escapeHTML(order.id)}">
+                                            Copy Summary
+                                        </button>
+
+                                        <button class="admin-small-btn copy-collection" data-id="${escapeHTML(order.id)}">
+                                            Copy Collection Msg
+                                        </button>
                                     </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join("")}
+                                </div>
+                            </td>
+                        </tr>
+                    `).join("")}
                 </tbody>
             </table>
         </div>
     `;
 }
 
-function toggleOrderDetails(index) {
-    const box = document.getElementById(`items-${index}`);
+function getOrderById(orderId) {
+    return allOrders.find((order) => order.id === orderId);
+}
 
-    if (box) {
-        box.classList.toggle("open");
+function getOrderSummary(order) {
+    const items = Array.isArray(order.items)
+        ? order.items.map((item) => `${item.quantity || 1} × ${item.name}`).join("\n")
+        : "No items";
+
+    return `
+POTS OF PLENTY ORDER
+
+Customer: ${order.customer_name}
+Email: ${order.customer_email}
+Phone: ${order.phone}
+
+Payment: ${order.status}
+Total: ${moneyFromPence(order.amount_total)}
+Fulfilment: ${getFulfilment(order)}
+
+Items:
+${items}
+
+Order ID:
+${order.id}
+`.trim();
+}
+
+function getCollectionMessage(order) {
+    return `
+Hi ${order.customer_name},
+
+Your Pots of Plenty order is ready for collection from Scarborough Harbour.
+
+Order total: ${moneyFromPence(order.amount_total)}
+
+Please bring your order confirmation when collecting.
+
+Thanks,
+Pots of Plenty
+`.trim();
+}
+
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert("Copied");
+    } catch {
+        prompt("Copy text:", text);
     }
 }
 
+async function saveOrderStatus(orderId) {
+    const fulfilment = document.querySelector(`.fulfilment-select[data-id="${CSS.escape(orderId)}"]`)?.value || "new";
+    const note = document.querySelector(`.order-note[data-id="${CSS.escape(orderId)}"]`)?.value || "";
+
+    const res = await window.adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/status`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            fulfilment,
+            note
+        })
+    });
+
+    if (!res) return;
+
+    const data = await res.json();
+
+    if (!data.success) {
+        alert("Could not save status");
+        return;
+    }
+
+    const order = getOrderById(orderId);
+
+    if (order) {
+        order.admin = {
+            fulfilment,
+            note,
+            updatedAt: new Date().toISOString()
+        };
+    }
+
+    renderOrders();
+}
+
 async function loadOrders() {
-    ordersContainer.innerHTML = `
-        <div class="loading-state">
-            Loading orders...
-        </div>
-    `;
+    ordersContainer.innerHTML = `<div class="admin-loading">Loading orders...</div>`;
 
     try {
-        const res = await fetch("/api/admin/orders", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const res = await window.adminFetch("/api/admin/orders");
 
-        if (res.status === 401) {
-            localStorage.removeItem("adminToken");
-            window.location.href = "/admin";
-            return;
-        }
+        if (!res) return;
 
         const data = await res.json();
 
         if (!data.success) {
-            ordersContainer.innerHTML = `
-                <div class="empty-state">
-                    Could not load orders.
-                </div>
-            `;
+            ordersContainer.innerHTML = `<div class="admin-empty">Could not load orders.</div>`;
             return;
         }
 
@@ -569,19 +474,62 @@ async function loadOrders() {
 
     } catch (err) {
         console.error(err);
-
-        ordersContainer.innerHTML = `
-            <div class="empty-state">
-                Order API failed.
-            </div>
-        `;
+        ordersContainer.innerHTML = `<div class="admin-empty">Order API failed.</div>`;
     }
 }
 
+ordersContainer.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+
+    if (!button) return;
+
+    const orderId = button.dataset.id;
+
+    if (button.classList.contains("view-details")) {
+        document
+            .getElementById(`details-${orderId}`)
+            ?.classList.toggle("open");
+    }
+
+    if (button.classList.contains("save-status")) {
+        saveOrderStatus(orderId);
+    }
+
+    if (button.classList.contains("copy-summary")) {
+        const order = getOrderById(orderId);
+        if (order) copyText(getOrderSummary(order));
+    }
+
+    if (button.classList.contains("copy-collection")) {
+        const order = getOrderById(orderId);
+        if (order) copyText(getCollectionMessage(order));
+    }
+});
+
+function copyVisibleOrders() {
+    const orders = getFilteredOrders();
+
+    const report = orders.map((order) => {
+        return getOrderSummary(order);
+    }).join("\n\n----------------------\n\n");
+
+    copyText(report || "No orders visible");
+}
+
 searchInput.addEventListener("input", renderOrders);
-statusFilter.addEventListener("change", renderOrders);
+paymentFilter.addEventListener("change", renderOrders);
+fulfilmentFilter.addEventListener("change", renderOrders);
 sortSelect.addEventListener("change", renderOrders);
 refreshBtn.addEventListener("click", loadOrders);
+copyVisibleBtn.addEventListener("click", copyVisibleOrders);
+
+clearFiltersBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    paymentFilter.value = "all";
+    fulfilmentFilter.value = "all";
+    sortSelect.value = "newest";
+    renderOrders();
+});
 
 loadOrders();
 </script>
