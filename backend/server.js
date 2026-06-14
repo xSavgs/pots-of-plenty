@@ -264,16 +264,6 @@ app.post("/create-checkout-session", async (req, res) => {
    ADMIN API
 ========================= */
 
-function requireAdmin(req, res, next) {
-    const token = req.headers.authorization?.replace("Bearer ", "");
-
-    if (!token || token !== process.env.ADMIN_TOKEN) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    next();
-}
-
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
     try {
         const orders = await getRecentStripeOrders(30);
