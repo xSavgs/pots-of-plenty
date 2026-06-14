@@ -168,7 +168,7 @@ function connectAISStream() {
         return;
     }
     
-    const wsUrl = `wss://stream.aisstream.io/v1/stream`;
+    const wsUrl = `wss://stream.aisstream.io/v0/stream`;
     
     const subscriptionMessage = {
         APIKey: AIS_API_KEY,
