@@ -49,6 +49,27 @@ app.use(
     })
 );
 
+app.post("/api/admin/login", (req, res) => {
+
+    const { username, password } = req.body;
+
+    if (
+        username === process.env.ADMIN_USERNAME &&
+        password === process.env.ADMIN_PASSWORD
+    ) {
+
+        return res.json({
+            success: true,
+            token: process.env.ADMIN_TOKEN
+        });
+    }
+
+    return res.status(401).json({
+        success: false
+    });
+
+});
+
 /* =========================
    STRIPE ROUTE
 ========================= */
@@ -135,7 +156,7 @@ console.log("Frontend path:", frontendPath);
 
 app.use(express.static(frontendPath));
 
-const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track"];
+const pages = ["shop", "product", "about", "contact", "index", "success", "cancel", "refund", "privacy", "terms", "track", "admin"];
 
 pages.forEach((page) => {
     app.get(`/${page}`, (req, res) => {
