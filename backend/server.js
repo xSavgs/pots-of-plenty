@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import path from "path";
 import { fileURLToPath } from "url";
 import fetch from "node-fetch";
+import WebSocket from "ws";
 
 /* =========================
    ES MODULE FIX
@@ -167,7 +168,6 @@ function connectAISStream() {
         return;
     }
     
-    const WebSocket = require('ws');
     const wsUrl = `wss://stream.aisstream.io/v1/stream`;
     
     const subscriptionMessage = {
