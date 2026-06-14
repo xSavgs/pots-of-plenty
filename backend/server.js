@@ -7,6 +7,8 @@ import { fileURLToPath } from "url";
 import fetch from "node-fetch";
 import WebSocket from "ws";
 
+const serverStartedAt = new Date();
+
 /* =========================
    ES MODULE FIX
 ========================= */
@@ -245,14 +247,133 @@ app.get("/api/admin/products", requireAdmin, (req, res) => {
     });
 });
 
-app.get("/api/admin/status", requireAdmin, (req, res) => {
+app.get("/api/admin/status", requireAdmin, async (req, res) => {
+    const now = new Date();
+
+    function getAgeSeconds(dateValue) {
+        if (!dateValue) return null;
+
+        const time = new Date(dateValue).getTime();
+
+        if (Number.isNaN(time)) return null;
+
+        return Math.floor((Date.now() - time) / 1000);
+    }
+
+    function getAISState() {
+        if (!aisStreamSocket) {
+            return {
+                code: null,
+                label: "Not connected"
+            };
+        }
+
+        const states = {
+            [WebSocket.CONNECTING]: "Connecting",
+            [WebSocket.OPEN]: "Open",
+            [WebSocket.CLOSING]: "Closing",
+            [WebSocket.CLOSED]: "Closed"
+        };
+
+        return {
+            code: aisStreamSocket.readyState,
+            label: states[aisStreamSocket.readyState] || "Unknown"
+        };
+    }
+
+    let stripeApiConnected = false;
+    let stripeMessage = "Stripe not checked";
+
+    if (process.env.STRIPE_SECRET_KEY) {
+        try {
+            await stripe.checkout.sessions.list({
+                limit: 1
+            });
+
+            stripeApiConnected = true;
+            stripeMessage = "Stripe API connected";
+        } catch (err) {
+            stripeApiConnected = false;
+            stripeMessage = err.message;
+        }
+    } else {
+        stripeMessage = "Stripe key missing";
+    }
+
+    const aisState = getAISState();
+
+    const vesselDataAgeSeconds = getAgeSeconds(
+        latestVesselData?.receivedAt ||
+        latestVesselData?.timestamp
+    );
+
+    const warnings = [];
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+        warnings.push("Stripe secret key is missing.");
+    }
+
+    if (!stripeApiConnected) {
+        warnings.push("Stripe API is not currently confirming successfully.");
+    }
+
+    if (!process.env.AISSTREAM_API_KEY) {
+        warnings.push("AISStream API key is missing.");
+    }
+
+    if (aisState.label !== "Open") {
+        warnings.push("AISStream WebSocket is not open.");
+    }
+
+    if (
+        vesselDataAgeSeconds !== null &&
+        vesselDataAgeSeconds > 3600
+    ) {
+        warnings.push("Latest vessel position is over 1 hour old.");
+    }
+
     res.json({
         success: true,
-        server: "online",
-        stripeKeyLoaded: !!process.env.STRIPE_SECRET_KEY,
-        aisKeyLoaded: !!process.env.AISSTREAM_API_KEY,
-        baseUrl: BASE_URL,
-        time: new Date().toISOString()
+
+        server: {
+            status: "online",
+            uptimeSeconds: Math.floor(process.uptime()),
+            startedAt: serverStartedAt.toISOString(),
+            checkedAt: now.toISOString(),
+            nodeEnv: process.env.NODE_ENV || "not set"
+        },
+
+        environment: {
+            baseUrl: BASE_URL,
+            railwayPortLoaded: !!process.env.PORT
+        },
+
+        stripe: {
+            keyLoaded: !!process.env.STRIPE_SECRET_KEY,
+            apiConnected: stripeApiConnected,
+            message: stripeMessage
+        },
+
+        ais: {
+            keyLoaded: !!process.env.AISSTREAM_API_KEY,
+            connection: aisState.label
+        },
+
+        vessel: {
+            name: latestVesselData?.name || "POTS OF PLENTY",
+            mmsi: latestVesselData?.mmsi || "235059314",
+            callsign: latestVesselData?.callsign || "2AGB7",
+            latitude: latestVesselData?.latitude || null,
+            longitude: latestVesselData?.longitude || null,
+            timestamp: latestVesselData?.timestamp || null,
+            receivedAt: latestVesselData?.receivedAt || null,
+            dataAgeSeconds: vesselDataAgeSeconds,
+            sog: latestVesselData?.sog ?? null,
+            cog: latestVesselData?.cog ?? null,
+            heading: latestVesselData?.heading ?? null
+        },
+
+        warnings
     });
 });
 
