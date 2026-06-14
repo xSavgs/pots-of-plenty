@@ -196,26 +196,50 @@ app.get("/api/admin/products", requireAdmin, (req, res) => {
         success: true,
         products: [
             {
+                id: "white-hoodie",
                 name: "Hoodie — White",
+                category: "hoodie",
+                status: "live",
+                image: "/assets/hoodie.jpg",
+                publicUrl: "/product?id=white-hoodie",
                 standard: 34.99,
                 premium: 49.99,
-                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
+                note: "Standard and premium available"
             },
             {
+                id: "black-hoodie",
                 name: "Hoodie — Black",
+                category: "hoodie",
+                status: "live",
+                image: "/assets/hoodie2.jpg",
+                publicUrl: "/product?id=black-hoodie",
                 standard: 34.99,
                 premium: 49.99,
-                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
+                note: "Standard and premium available"
             },
             {
+                id: "white-tshirt",
                 name: "T-Shirt — White",
+                category: "tshirt",
+                status: "live",
+                image: "/assets/tshirt.jpg",
+                publicUrl: "/product?id=white-tshirt",
                 price: 24.99,
-                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
+                note: "Single version"
             },
             {
+                id: "black-tshirt",
                 name: "T-Shirt — Black",
+                category: "tshirt",
+                status: "live",
+                image: "/assets/tshirt2.jpg",
+                publicUrl: "/product?id=black-tshirt",
                 price: 24.99,
-                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"]
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
+                note: "Single version"
             }
         ]
     });

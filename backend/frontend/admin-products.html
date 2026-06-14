@@ -4,16 +4,290 @@
     <meta charset="UTF-8">
     <title>Admin Products — Pots of Plenty</title>
     <link rel="stylesheet" href="/style.css">
+
+    <style>
+        .admin-products-wrap {
+            width: 92%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 60px 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 35px;
+        }
+
+        .admin-header h1 {
+            font-size: 46px;
+            margin-bottom: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(160px, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .summary-card {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .summary-card span {
+            display: block;
+            opacity: .7;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .summary-card strong {
+            font-size: 28px;
+        }
+
+        .admin-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .admin-controls input,
+        .admin-controls select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            font-size: 15px;
+        }
+
+        .admin-controls option {
+            color: black;
+        }
+
+        .products-admin-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-product-card {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            gap: 22px;
+            padding: 20px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .admin-product-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .product-top-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .product-top-line h3 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .status-live {
+            color: #071b0d;
+            background: #38d66b;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.12);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .price-box {
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .price-box span {
+            display: block;
+            font-size: 12px;
+            opacity: .65;
+            margin-bottom: 4px;
+        }
+
+        .price-box strong {
+            font-size: 20px;
+        }
+
+        .muted {
+            opacity: .7;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .product-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .small-btn {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            cursor: pointer;
+            font-weight: 800;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .small-btn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+
+        .empty-state,
+        .loading-state {
+            padding: 35px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 1000px) {
+            .summary-grid,
+            .admin-controls,
+            .products-admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-product-card {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-product-card img {
+                height: 260px;
+            }
+
+            .admin-header h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<section class="section" style="padding:60px 0;">
-    <h1>Products</h1>
-    <p style="opacity:.7;margin-bottom:30px;">Current store product setup.</p>
+<section class="admin-products-wrap">
 
-    <a href="/admin-dashboard" class="outline-btn">← Back to Dashboard</a>
+    <div class="admin-header">
+        <div>
+            <h1>Products</h1>
+            <p style="opacity:.7;">View and manage your current store product setup.</p>
+        </div>
 
-    <div id="products" class="products-grid" style="margin-top:40px;"></div>
+        <a href="/admin-dashboard" class="hero-btn">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <span>Total Products</span>
+            <strong id="summaryTotal">0</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Live Products</span>
+            <strong id="summaryLive">0</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Hoodies</span>
+            <strong id="summaryHoodies">0</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>T-Shirts</span>
+            <strong id="summaryTshirts">0</strong>
+        </div>
+    </div>
+
+    <div class="admin-controls">
+        <input
+            type="search"
+            id="searchInput"
+            placeholder="Search by product name, category, size or price..."
+        >
+
+        <select id="categoryFilter">
+            <option value="all">All products</option>
+            <option value="hoodie">Hoodies only</option>
+            <option value="tshirt">T-Shirts only</option>
+        </select>
+
+        <select id="sortSelect">
+            <option value="name">Name A-Z</option>
+            <option value="price-low">Lowest price</option>
+            <option value="price-high">Highest price</option>
+            <option value="category">Category</option>
+        </select>
+
+        <button class="small-btn" id="refreshBtn">
+            Refresh
+        </button>
+    </div>
+
+    <div id="products">
+        <div class="loading-state">Loading products...</div>
+    </div>
+
 </section>
 
 <script>
@@ -23,37 +297,274 @@ if (!token) {
     window.location.href = "/admin";
 }
 
-async function loadProducts() {
-    const container = document.getElementById("products");
+let allProducts = [];
 
-    const res = await fetch("/api/admin/products", {
-        headers: {
-            Authorization: `Bearer ${token}`
+const productsContainer = document.getElementById("products");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const sortSelect = document.getElementById("sortSelect");
+const refreshBtn = document.getElementById("refreshBtn");
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function priceText(value) {
+    return `£${Number(value || 0).toFixed(2)}`;
+}
+
+function getLowestPrice(product) {
+    if (product.category === "hoodie") {
+        return Number(product.standard || 0);
+    }
+
+    return Number(product.price || 0);
+}
+
+function getHighestPrice(product) {
+    if (product.category === "hoodie") {
+        return Number(product.premium || product.standard || 0);
+    }
+
+    return Number(product.price || 0);
+}
+
+function updateSummary() {
+    document.getElementById("summaryTotal").textContent = allProducts.length;
+
+    document.getElementById("summaryLive").textContent =
+        allProducts.filter(product => product.status === "live").length;
+
+    document.getElementById("summaryHoodies").textContent =
+        allProducts.filter(product => product.category === "hoodie").length;
+
+    document.getElementById("summaryTshirts").textContent =
+        allProducts.filter(product => product.category === "tshirt").length;
+}
+
+function getSearchText(product) {
+    return `
+        ${product.id}
+        ${product.name}
+        ${product.category}
+        ${product.status}
+        ${product.note}
+        ${product.price}
+        ${product.standard}
+        ${product.premium}
+        ${Array.isArray(product.sizes) ? product.sizes.join(" ") : ""}
+    `.toLowerCase();
+}
+
+function getFilteredAndSortedProducts() {
+    const search = searchInput.value.trim().toLowerCase();
+    const category = categoryFilter.value;
+    const sort = sortSelect.value;
+
+    let products = [...allProducts];
+
+    if (search) {
+        products = products.filter(product => {
+            return getSearchText(product).includes(search);
+        });
+    }
+
+    if (category !== "all") {
+        products = products.filter(product => product.category === category);
+    }
+
+    products.sort((a, b) => {
+        if (sort === "name") {
+            return String(a.name).localeCompare(String(b.name));
         }
+
+        if (sort === "price-low") {
+            return getLowestPrice(a) - getLowestPrice(b);
+        }
+
+        if (sort === "price-high") {
+            return getHighestPrice(b) - getHighestPrice(a);
+        }
+
+        if (sort === "category") {
+            return String(a.category).localeCompare(String(b.category));
+        }
+
+        return 0;
     });
 
-    const data = await res.json();
+    return products;
+}
 
-    if (!data.success) {
-        container.innerHTML = "<p>Could not load products.</p>";
+function renderPriceBoxes(product) {
+    if (product.category === "hoodie") {
+        return `
+            <div class="price-row">
+                <div class="price-box">
+                    <span>Standard</span>
+                    <strong>${priceText(product.standard)}</strong>
+                </div>
+
+                <div class="price-box">
+                    <span>Premium</span>
+                    <strong>${priceText(product.premium)}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="price-row">
+            <div class="price-box">
+                <span>Price</span>
+                <strong>${priceText(product.price)}</strong>
+            </div>
+
+            <div class="price-box">
+                <span>Versions</span>
+                <strong>1</strong>
+            </div>
+        </div>
+    `;
+}
+
+async function copyProductLink(path) {
+    const url = `${window.location.origin}${path}`;
+
+    try {
+        await navigator.clipboard.writeText(url);
+        alert("Product link copied");
+    } catch {
+        prompt("Copy product link:", url);
+    }
+}
+
+function renderProducts() {
+    updateSummary();
+
+    const products = getFilteredAndSortedProducts();
+
+    if (products.length === 0) {
+        productsContainer.innerHTML = `
+            <div class="empty-state">
+                No products match your current filter.
+            </div>
+        `;
         return;
     }
 
-    container.innerHTML = data.products.map(product => `
-        <div class="product-card" style="padding:25px;">
-            <h3>${product.name}</h3>
+    productsContainer.innerHTML = `
+        <div class="products-admin-grid">
+            ${products.map(product => `
+                <div class="admin-product-card">
+                    <img
+                        src="${escapeHTML(product.image)}"
+                        alt="${escapeHTML(product.name)}"
+                        onerror="this.style.display='none'"
+                    >
 
-            ${
-                product.premium
-                ? `<p>Standard: £${product.standard.toFixed(2)}</p>
-                   <p>Premium: £${product.premium.toFixed(2)}</p>`
-                : `<p>Price: £${product.price.toFixed(2)}</p>`
-            }
+                    <div>
+                        <div class="product-top-line">
+                            <h3>${escapeHTML(product.name)}</h3>
 
-            <p>Sizes: ${product.sizes.join(", ")}</p>
+                            <span class="status-badge status-live">
+                                ${escapeHTML(product.status || "live")}
+                            </span>
+                        </div>
+
+                        <span class="category-badge">
+                            ${product.category === "hoodie" ? "Hoodie" : "T-Shirt"}
+                        </span>
+
+                        ${renderPriceBoxes(product)}
+
+                        <p class="muted">
+                            Sizes: ${Array.isArray(product.sizes) ? product.sizes.join(", ") : "No sizes"}
+                        </p>
+
+                        <p class="muted">
+                            ${escapeHTML(product.note || "")}
+                        </p>
+
+                        <div class="product-actions">
+                            <a
+                                href="${escapeHTML(product.publicUrl)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="small-btn"
+                            >
+                                Open Product
+                            </a>
+
+                            <button
+                                class="small-btn"
+                                onclick="copyProductLink('${escapeHTML(product.publicUrl)}')"
+                            >
+                                Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join("")}
         </div>
-    `).join("");
+    `;
 }
+
+async function loadProducts() {
+    productsContainer.innerHTML = `
+        <div class="loading-state">
+            Loading products...
+        </div>
+    `;
+
+    try {
+        const res = await fetch("/api/admin/products", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (res.status === 401) {
+            localStorage.removeItem("adminToken");
+            window.location.href = "/admin";
+            return;
+        }
+
+        const data = await res.json();
+
+        if (!data.success) {
+            productsContainer.innerHTML = `
+                <div class="empty-state">
+                    Could not load products.
+                </div>
+            `;
+            return;
+        }
+
+        allProducts = data.products || [];
+
+        renderProducts();
+
+    } catch (err) {
+        console.error(err);
+
+        productsContainer.innerHTML = `
+            <div class="empty-state">
+                Product API failed.
+            </div>
+        `;
+    }
+}
+
+searchInput.addEventListener("input", renderProducts);
+categoryFilter.addEventListener("change", renderProducts);
+sortSelect.addEventListener("change", renderProducts);
+refreshBtn.addEventListener("click", loadProducts);
 
 loadProducts();
 </script>
