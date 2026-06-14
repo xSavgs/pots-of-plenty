@@ -300,7 +300,7 @@ body.admin-page {
 
 .admin-controls option,
 .admin-input option {
-    color: black;
+    color: white;
 }
 
 .admin-textarea {
