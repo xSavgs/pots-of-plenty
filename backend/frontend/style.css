@@ -1022,16 +1022,6 @@ img {
 
 }
 
-
-
-
-
-
-
-
-
-
-
 /* CONTACT HERO */
 
 .contact-hero {
@@ -1135,6 +1125,7 @@ img {
 }
 
 .contact-cta h2 {
+  font-size: 64px;
   font-size: 64px;
   margin-bottom: 20px;
 }
