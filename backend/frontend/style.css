@@ -1581,3 +1581,16 @@ select option {
         text-align: center;
     }
 }
+
+.logo a {
+    display: inline-block;
+}
+
+.logo img {
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.logo a:hover img {
+    transform: scale(1.08);
+    filter: drop-shadow(0 8px 18px rgba(255,255,255,0.2));
+}
