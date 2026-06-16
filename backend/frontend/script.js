@@ -34,6 +34,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkoutBtn = document.getElementById("checkoutBtn");
 
     const searchBar = document.getElementById("searchBar");
+    
+    /* =========================
+       SCROLLING TOP BAR
+    ========================= */
+
+    function setupTopBarTicker() {
+        const topBars = document.querySelectorAll(".top-bar");
+
+        topBars.forEach((topBar) => {
+            if (topBar.querySelector(".top-bar-track")) return;
+
+            const originalText = topBar.textContent.trim();
+
+            if (!originalText) return;
+
+            topBar.setAttribute("aria-label", originalText);
+            topBar.textContent = "";
+
+            const track = document.createElement("div");
+            track.className = "top-bar-track";
+            track.setAttribute("aria-hidden", "true");
+
+            for (let i = 0; i < 4; i++) {
+                const span = document.createElement("span");
+                span.className = "top-bar-message";
+                span.textContent = originalText;
+                track.appendChild(span);
+            }
+
+            topBar.appendChild(track);
+        });
+    }
+
+    setupTopBarTicker();
 
     /* =========================
        PRODUCTS
