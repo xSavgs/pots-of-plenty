@@ -847,6 +847,28 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
 });
 
+app.get("/api/admin/order-debug", async (req, res) => {
+    const orders = await loadOrders();
+
+    const summary = orders.map(order => ({
+        id: order.id,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        paid: order.paid,
+        total: order.total,
+        paidAmount: order.paidAmount,
+        stripeSessionId: order.stripeSessionId,
+        stripePaymentIntentId: order.stripePaymentIntentId,
+        createdAt: order.createdAt,
+        paidAt: order.paidAt
+    }));
+
+    res.json({
+        totalOrders: orders.length,
+        orders: summary
+    });
+});
+
 /* =================== */
 /* MARITIME DATA STUFF */
 /* =================== */
