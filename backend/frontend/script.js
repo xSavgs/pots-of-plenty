@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
 
             <div class="cart-collection-note">
-                Collection from Scarborough Harbour. Orders may take up to 2 weeks.
+                Delivery may take up to 2 weeks.
             </div>
 
             ${
