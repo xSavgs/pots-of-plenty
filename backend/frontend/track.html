@@ -6,19 +6,17 @@
 
         <title>Radar Tracker — Pots of Plenty</title>
 
-        <!-- Load styles in correct order -->
         <link rel="stylesheet" href="/style.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <link rel="stylesheet" href="trackingStyle.css" />
+        <link rel="stylesheet" href="/trackingStyle.css" />
 
-        <script src="trackingScript.js" defer></script>
-        <script src="script.js" defer></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+        <script src="/trackingScript.js" defer></script>
     </head>
     <body class="tracking-page">
         <div class="top-bar">⚓ COLLECTION ONLY FROM SCARBOROUGH HARBOUR, NORTH YORKSHIRE</div>
 
         <div class="tracker-wrapper">
-            <!-- Radar-style header -->
             <div class="radar-header">
                 <div class="vessel-info">
                     <div class="vessel-name">⚓ POTS OF PLENTY</div>
@@ -30,20 +28,17 @@
                 <div class="radar-status">📡 RADAR ACTIVE</div>
             </div>
 
-            <!-- Control buttons -->
             <div class="control-buttons">
-                <button class="radar-btn" onclick="centerOnVessel()">🎯 CENTER ON VESSEL</button>
-                <button class="radar-btn" onclick="refreshData()">🔄 FORCE UPDATE</button>
-                <button class="radar-btn" onclick="toggleRadarMode()">📡 TOGGLE RANGE RINGS</button>
+                <button class="radar-btn" id="centerVesselBtn" type="button">🎯 CENTER ON VESSEL</button>
+                <button class="radar-btn" id="refreshVesselBtn" type="button">🔄 FORCE UPDATE</button>
+                <button class="radar-btn" id="toggleRadarBtn" type="button">📡 TOGGLE RANGE RINGS</button>
             </div>
 
-            <!-- Map container with compass -->
             <div class="map-container">
                 <div id="map"></div>
                 <div class="compass"></div>
             </div>
 
-            <!-- Data panel -->
             <div class="data-panel">
                 <div class="data-grid">
                     <div class="data-item">
@@ -70,22 +65,17 @@
             </div>
         </div>
 
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-        <!-- FOOTER -->
         <footer class="footer">
             <div class="footer-grid">
                 <div>
                     <a href="/index">
                         <img src="assets/logo.png" alt="" class="footer-logo" />
                     </a>
-
                     <p>Authentic coastal clothing and gear, inspired by life on the water.</p>
                 </div>
 
                 <div>
                     <h4>SHOP</h4>
-
                     <ul>
                         <li><a href="/shop">All Products</a></li>
                         <li><a href="/shop?category=hoodies">Hoodies</a></li>
@@ -95,7 +85,6 @@
 
                 <div>
                     <h4>INFO</h4>
-
                     <ul>
                         <li><a href="/about">About Us</a></li>
                         <li><a href="/shipping">Shipping</a></li>
@@ -106,7 +95,6 @@
 
                 <div>
                     <h4>CUSTOMER CARE</h4>
-
                     <ul>
                         <li><a href="/faq">FAQs</a></li>
                         <li><a href="/refund">Returns Policy</a></li>
@@ -116,13 +104,10 @@
 
                 <div>
                     <h4>JOIN THE CREW</h4>
-
                     <p>Get updates, new drops and exclusive offers.</p>
-
                     <div class="newsletter">
                         <input type="email" placeholder="Enter your email" />
-
-                        <button>→</button>
+                        <button type="button">→</button>
                     </div>
                 </div>
             </div>

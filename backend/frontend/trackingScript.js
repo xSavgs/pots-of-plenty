@@ -1,212 +1,309 @@
-// Wait for DOM and Leaflet to be ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if map element exists and Leaflet is loaded
-    if (typeof L !== 'undefined' && document.getElementById('map')) {
-        initMap();
-    } else {
-        console.log('Waiting for Leaflet or map element...');
-    }
-});
+(() => {
+    "use strict";
 
-function initMap() {
-    // Your existing map initialization code here
-    // Move all your existing map code inside this function
-}
+    const API_URL = "/api/vessel";
+    const DEFAULT_POSITION = [54.2798, -0.4044];
+    const DEFAULT_ZOOM = 14;
+    const FOCUSED_ZOOM = 15;
+    const REFRESH_MS = 30000;
 
-// Custom radar-style boat icon
-const vesselIcon = L.divIcon({
-    html: '<div style="font-size: 32px; filter: drop-shadow(0 0 3px #00e5ff);">⛵</div>',
-    iconSize: [32, 32],
-    className: "vessel-marker"
-});
+    let map = null;
+    let marker = null;
+    let radarCircle = null;
+    let radarMode = false;
+    let userMovedMap = false;
+    let suppressMoveTracking = false;
+    let isLoading = false;
 
-// Use standard map tiles that are bright and clear
-const map = L.map("map", {
-    zoomControl: true,
-    fadeAnimation: true,
-    zoomAnimation: true
-}).setView([54.2798, -0.4044], 14);
+    const vesselIconHtml = '<div style="font-size: 32px; filter: drop-shadow(0 0 3px #00e5ff);">⛵</div>';
 
-// Use standard OpenStreetMap tiles (they're bright and clear)
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
-}).addTo(map);
-
-let marker = null;
-let radarCircle = null;
-let radarMode = false;
-
-// Function to add radar range rings
-function updateRadarRings(centerLat, centerLon) {
-    if (radarCircle) {
-        map.removeLayer(radarCircle);
+    function byId(id) {
+        return document.getElementById(id);
     }
 
-    radarCircle = L.circle([centerLat, centerLon], {
-        color: "#00e5ff",
-        fillColor: "rgba(0, 229, 255, 0.05)",
-        weight: 2,
-        opacity: 0.6,
-        radius: 500 // 500 meters range
-    }).addTo(map);
-}
+    function setHtml(id, html) {
+        const el = byId(id);
 
-async function loadVessel() {
-    try {
-        const res = await fetch("/api/vessel");
-        const data = await res.json();
+        if (el) {
+            el.innerHTML = html;
+        }
+    }
 
-        if (!data.success) {
-            document.getElementById("signalStatus").innerHTML = '<span style="color: #ff6666;">⚠ SIGNAL LOST</span>';
+    function toNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+    }
+
+    function formatCoordinate(value, positiveLabel, negativeLabel) {
+        const direction = value >= 0 ? positiveLabel : negativeLabel;
+        return `${Math.abs(value).toFixed(6)}° ${direction}`;
+    }
+
+    function formatPosition(lat, lon) {
+        return `${formatCoordinate(lat, "N", "S")}<br>${formatCoordinate(lon, "E", "W")}`;
+    }
+
+    function formatAge(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+            return "timestamp unavailable";
+        }
+
+        const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+
+        if (seconds >= 3600) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${minutes}m ago`;
+        }
+
+        if (seconds >= 60) {
+            return `${Math.floor(seconds / 60)} minutes ${seconds % 60} seconds ago`;
+        }
+
+        return `${seconds} seconds ago`;
+    }
+
+    function getCardinalDirection(degrees) {
+        const directions = [
+            "N",
+            "NNE",
+            "NE",
+            "ENE",
+            "E",
+            "ESE",
+            "SE",
+            "SSE",
+            "S",
+            "SSW",
+            "SW",
+            "WSW",
+            "W",
+            "WNW",
+            "NW",
+            "NNW"
+        ];
+
+        return directions[Math.round(degrees / 22.5) % 16];
+    }
+
+    function safeSetView(position, zoom) {
+        if (!map) return;
+
+        suppressMoveTracking = true;
+        map.setView(position, zoom);
+
+        window.setTimeout(() => {
+            suppressMoveTracking = false;
+        }, 300);
+    }
+
+    function updateRadarRings(lat, lon) {
+        if (!map || typeof L === "undefined") return;
+
+        if (radarCircle) {
+            map.removeLayer(radarCircle);
+            radarCircle = null;
+        }
+
+        radarCircle = L.circle([lat, lon], {
+            color: "#00e5ff",
+            fillColor: "rgba(0, 229, 255, 0.05)",
+            weight: 2,
+            opacity: 0.6,
+            radius: 500
+        }).addTo(map);
+    }
+
+    function buildPopup(data, updateTime) {
+        const sog = toNumber(data.sog);
+        const cog = toNumber(data.cog);
+
+        return `
+            <div style="font-family: monospace; background: #fff; color: #061220; padding: 5px;">
+                <b>⚓ POTS OF PLENTY</b><br>
+                ${sog !== null ? `Speed: ${sog.toFixed(1)} kn<br>` : ""}
+                ${cog !== null ? `Course: ${cog.toFixed(0)}° ${getCardinalDirection(cog)}<br>` : ""}
+                Last update: ${Number.isNaN(updateTime.getTime()) ? "Unavailable" : updateTime.toLocaleTimeString()}
+            </div>
+        `;
+    }
+
+    async function loadVessel() {
+        if (!map || isLoading) return;
+
+        isLoading = true;
+
+        try {
+            const res = await fetch(API_URL, {
+                cache: "no-store"
+            });
+
+            if (!res.ok) {
+                throw new Error(`Vessel endpoint returned HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+
+            if (!data || !data.success) {
+                setHtml("signalStatus", '<span style="color: #ff6666;">⚠ SIGNAL LOST</span>');
+                return;
+            }
+
+            const lat = toNumber(data.latitude);
+            const lon = toNumber(data.longitude);
+
+            if (lat === null || lon === null) {
+                throw new Error("Vessel endpoint did not return valid latitude/longitude values");
+            }
+
+            const sog = toNumber(data.sog);
+            const cog = toNumber(data.cog);
+            const updateTime = new Date(data.timestamp || data.receivedAt || Date.now());
+
+            setHtml("signalStatus", '<span class="signal-strength"></span> SIGNAL ACQUIRED');
+            setHtml("position", formatPosition(lat, lon));
+
+            if (sog !== null && sog > 0) {
+                setHtml(
+                    "speed",
+                    `${sog.toFixed(1)} kn<br><span style="font-size:11px;">${(sog * 1.852).toFixed(1)} km/h</span>`
+                );
+            } else {
+                setHtml("speed", '0 kn<br><span style="font-size:11px;">At anchor</span>');
+            }
+
+            if (cog !== null) {
+                setHtml(
+                    "course",
+                    `${cog.toFixed(0)}°<br><span style="font-size:11px;">${getCardinalDirection(cog)}</span>`
+                );
+            } else {
+                setHtml("course", '---°<br><span style="font-size:11px;">--</span>');
+            }
+
+            setHtml(
+                "lastUpdate",
+                `${Number.isNaN(updateTime.getTime()) ? "Unavailable" : updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">AIS data age: ${formatAge(updateTime)}</span>`
+            );
+
+            const popup = buildPopup(data, updateTime);
+
+            if (!marker) {
+                marker = L.marker([lat, lon], {
+                    icon: window.vesselIcon
+                })
+                    .addTo(map)
+                    .bindPopup(popup);
+            } else {
+                marker.setLatLng([lat, lon]);
+                marker.setPopupContent(popup);
+            }
+
+            if (radarMode) {
+                updateRadarRings(lat, lon);
+            }
+
+            if (!userMovedMap) {
+                safeSetView([lat, lon], DEFAULT_ZOOM);
+            }
+        } catch (err) {
+            console.error("Vessel tracker error:", err);
+            setHtml("signalStatus", '<span style="color: #ff6666;">⚠ CONNECTION ERROR</span>');
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    function centerOnVessel() {
+        if (!marker) {
+            alert("Waiting for vessel position data...");
             return;
         }
 
-        const lat = data.latitude;
-        const lon = data.longitude;
-
-        // Update signal status
-        document.getElementById("signalStatus").innerHTML = '<span class="signal-strength"></span> SIGNAL ACQUIRED';
-
-        // Update position display
-        document.getElementById("position").innerHTML = `${lat.toFixed(6)}° N<br>${lon.toFixed(6)}° E`;
-
-        // Update speed and course if available
-        if (data.sog !== undefined && data.sog > 0) {
-            const speedKnots = data.sog;
-            const speedKmph = (speedKnots * 1.852).toFixed(1);
-            document.getElementById("speed").innerHTML =
-                `${speedKnots.toFixed(1)} kn<br><span style="font-size:11px;">${speedKmph} km/h</span>`;
-        } else {
-            document.getElementById("speed").innerHTML = '0 kn<br><span style="font-size:11px;">At anchor</span>';
-        }
-
-        if (data.cog !== undefined && data.cog > 0) {
-            document.getElementById("course").innerHTML =
-                `${data.cog.toFixed(0)}°<br><span style="font-size:11px;">${getCardinalDirection(data.cog)}</span>`;
-        } else {
-            document.getElementById("course").innerHTML = '---°<br><span style="font-size:11px;">--</span>';
-        }
-
-        const updateTime = new Date(data.timestamp); // Real AIS time
-        const serverTime = new Date(data.serverTime || data.timestamp); // Server time
-        const receivedTime = new Date(data.receivedAt || data.timestamp); // When server got it
-
-        const now = new Date();
-        const diffFromAIS = Math.floor((now - updateTime) / 1000);
-        const diffFromReceived = Math.floor((now - receivedTime) / 1000);
-
-        let timeDisplay = "";
-        if (diffFromAIS > 60) {
-            timeDisplay = `${Math.floor(diffFromAIS / 60)} minutes ${diffFromAIS % 60} seconds ago`;
-        } else {
-            timeDisplay = `${diffFromAIS} seconds ago`;
-        }
-
-        // Show both the AIS timestamp and when the server received it
-        document.getElementById("lastUpdate").innerHTML =
-            `${updateTime.toLocaleTimeString()}<br><span style="font-size:11px;">AIS data age: ${timeDisplay}</span>`;
-
-        // Optional: Add debug info to console
-        console.log(`AIS timestamp: ${updateTime.toLocaleTimeString()}`);
-        console.log(`Server received: ${receivedTime.toLocaleTimeString()}`);
-        console.log(`Current time: ${now.toLocaleTimeString()}`);
-        console.log(`Age: ${diffFromAIS} seconds`);
-
-        // Update marker
-        if (!marker) {
-            marker = L.marker([lat, lon], { icon: vesselIcon }).addTo(map).bindPopup(`
-                <div style="font-family: monospace; background: #fff; color: #061220; padding: 5px;">
-                    <b>⚓ POTS OF PLENTY</b><br>
-                    ${data.sog ? `Speed: ${data.sog.toFixed(1)} kn<br>` : ""}
-                    ${data.cog ? `Course: ${data.cog.toFixed(0)}°<br>` : ""}
-                    Last update: ${updateTime.toLocaleTimeString()}
-                </div>
-            `);
-        } else {
-            marker.setLatLng([lat, lon]);
-        }
-
-        // Update radar rings if in radar mode
-        if (radarMode) {
-            updateRadarRings(lat, lon);
-        }
-
-        // Only auto-center if user hasn't moved the map recently
-        if (!userMovedMap) {
-            map.setView([lat, lon], 14);
-        }
-    } catch (err) {
-        console.error(err);
-        document.getElementById("signalStatus").innerHTML = '<span style="color: #ff6666;">⚠ CONNECTION ERROR</span>';
-    }
-}
-
-// Helper function for cardinal directions
-function getCardinalDirection(degrees) {
-    const directions = [
-        "N",
-        "NNE",
-        "NE",
-        "ENE",
-        "E",
-        "ESE",
-        "SE",
-        "SSE",
-        "S",
-        "SSW",
-        "SW",
-        "WSW",
-        "W",
-        "WNW",
-        "NW",
-        "NNW"
-    ];
-    const index = Math.round(degrees / 22.5) % 16;
-    return directions[index];
-}
-
-let userMovedMap = false;
-
-// Detect when user moves the map
-map.on("dragstart", () => {
-    userMovedMap = true;
-});
-
-function centerOnVessel() {
-    if (marker) {
-        const pos = marker.getLatLng();
-        map.setView(pos, 15);
-        marker.openPopup();
         userMovedMap = false;
-    } else {
-        alert("Waiting for vessel position data...");
+        safeSetView(marker.getLatLng(), FOCUSED_ZOOM);
+        marker.openPopup();
     }
-}
 
-function refreshData() {
-    loadVessel();
-    const btn = event.target;
-    const originalText = btn.textContent;
-    btn.textContent = "🔄 UPDATING...";
-    setTimeout(() => {
-        btn.textContent = originalText;
-    }, 1000);
-}
+    function refreshData(event) {
+        loadVessel();
 
-function toggleRadarMode() {
-    radarMode = !radarMode;
-    if (radarMode && marker) {
-        const pos = marker.getLatLng();
-        updateRadarRings(pos.lat, pos.lng);
-    } else if (radarCircle) {
-        map.removeLayer(radarCircle);
-        radarCircle = null;
+        const btn = event?.currentTarget || event?.target;
+
+        if (!btn) return;
+
+        const originalText = btn.textContent;
+        btn.textContent = "🔄 UPDATING...";
+
+        window.setTimeout(() => {
+            btn.textContent = originalText;
+        }, 1000);
     }
-}
 
-// Load initial data
-loadVessel();
+    function toggleRadarMode() {
+        radarMode = !radarMode;
 
-// Update every 30 seconds
-setInterval(loadVessel, 30000);
+        if (radarMode && marker) {
+            const pos = marker.getLatLng();
+            updateRadarRings(pos.lat, pos.lng);
+            return;
+        }
+
+        if (!radarMode && radarCircle) {
+            map.removeLayer(radarCircle);
+            radarCircle = null;
+        }
+    }
+
+    function initMap() {
+        if (typeof L === "undefined") {
+            setHtml("signalStatus", '<span style="color: #ff6666;">⚠ MAP LIBRARY FAILED</span>');
+            console.error("Leaflet did not load. Check the Leaflet script tag/order.");
+            return;
+        }
+
+        const mapElement = byId("map");
+
+        if (!mapElement) {
+            console.error("Cannot initialise tracker: #map element was not found.");
+            return;
+        }
+
+        window.vesselIcon = L.divIcon({
+            html: vesselIconHtml,
+            iconSize: [32, 32],
+            className: "vessel-marker"
+        });
+
+        map = L.map(mapElement, {
+            zoomControl: true,
+            fadeAnimation: true,
+            zoomAnimation: true
+        }).setView(DEFAULT_POSITION, DEFAULT_ZOOM);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        map.on("dragstart zoomstart", () => {
+            if (!suppressMoveTracking) {
+                userMovedMap = true;
+            }
+        });
+
+        byId("centerVesselBtn")?.addEventListener("click", centerOnVessel);
+        byId("refreshVesselBtn")?.addEventListener("click", refreshData);
+        byId("toggleRadarBtn")?.addEventListener("click", toggleRadarMode);
+
+        loadVessel();
+
+        window.setInterval(loadVessel, REFRESH_MS);
+    }
+
+    window.centerOnVessel = centerOnVessel;
+    window.refreshData = refreshData;
+    window.toggleRadarMode = toggleRadarMode;
+
+    document.addEventListener("DOMContentLoaded", initMap);
+})();
