@@ -126,6 +126,110 @@ function isPaidStripeOrder(order) {
 }
 
 /* =========================
+   GIVEAWAY SETTINGS
+========================= */
+
+const GIVEAWAY_NAME = "Premium Gold Hoodie Giveaway";
+const GIVEAWAY_PRIZE = "Premium Gold Hoodie";
+const GIVEAWAY_TARGET = clampNumber(
+    process.env.GIVEAWAY_TARGET,
+    100,
+    1,
+    100000
+);
+const GIVEAWAY_EXTRA_ORDERS = clampNumber(
+    process.env.GIVEAWAY_EXTRA_ORDERS,
+    0,
+    0,
+    100000
+);
+const GIVEAWAY_STRIPE_SESSION_LIMIT = clampNumber(
+    process.env.GIVEAWAY_STRIPE_SESSION_LIMIT,
+    10000,
+    1,
+    100000
+);
+const GIVEAWAY_CACHE_MS = clampNumber(
+    process.env.GIVEAWAY_CACHE_SECONDS,
+    60,
+    5,
+    3600
+) * 1000;
+
+let giveawayProgressCache = {
+    expiresAt: 0,
+    data: null
+};
+
+function isGiveawayEligibleSession(session, adminData) {
+    const savedStatus = adminData.orderStatuses?.[session.id] || {};
+
+    return (
+        session.payment_status === "paid" &&
+        savedStatus.fulfilment !== "refunded"
+    );
+}
+
+async function getGiveawayProgress({ forceRefresh = false } = {}) {
+    if (
+        !forceRefresh &&
+        giveawayProgressCache.data &&
+        Date.now() < giveawayProgressCache.expiresAt
+    ) {
+        return giveawayProgressCache.data;
+    }
+
+    if (!stripe) {
+        throw new Error("Stripe secret key is missing");
+    }
+
+    const adminData = readAdminData();
+    const { sessions, hasMore } = await listStripeCheckoutSessions(
+        GIVEAWAY_STRIPE_SESSION_LIMIT
+    );
+
+    const eligibleSessions = sessions.filter((session) => {
+        return isGiveawayEligibleSession(session, adminData);
+    });
+
+    const stripePaidOrderCount = eligibleSessions.length;
+    const count = stripePaidOrderCount + GIVEAWAY_EXTRA_ORDERS;
+    const displayCount = Math.min(count, GIVEAWAY_TARGET);
+    const remaining = Math.max(GIVEAWAY_TARGET - count, 0);
+    const percentage = Math.min(
+        Math.round((count / GIVEAWAY_TARGET) * 100),
+        100
+    );
+
+    const data = {
+        giveawayName: GIVEAWAY_NAME,
+        prize: GIVEAWAY_PRIZE,
+        count,
+        displayCount,
+        target: GIVEAWAY_TARGET,
+        remaining,
+        percentage,
+        reached: count >= GIVEAWAY_TARGET,
+        stripePaidOrderCount,
+        manualExtraOrders: GIVEAWAY_EXTRA_ORDERS,
+        stripeSessionLimit: GIVEAWAY_STRIPE_SESSION_LIMIT,
+        stripeHasMoreAfterThisBatch: hasMore,
+        cachedForSeconds: Math.floor(GIVEAWAY_CACHE_MS / 1000),
+        updatedAt: new Date().toISOString(),
+        message: count >= GIVEAWAY_TARGET
+            ? "The giveaway target has been reached. Winner selection can now be handled from the admin side."
+            : "Every paid website order is automatically entered into the Premium Gold Hoodie Giveaway."
+    };
+
+    giveawayProgressCache = {
+        expiresAt: Date.now() + GIVEAWAY_CACHE_MS,
+        data
+    };
+
+    return data;
+}
+
+/* =========================
    STRIPE HELPERS
 ========================= */
 
@@ -357,7 +461,13 @@ app.post("/create-checkout-session", async (req, res) => {
             customer_creation: "always",
             line_items,
             success_url: `${BASE_URL}/success`,
-            cancel_url: `${BASE_URL}/cancel`
+            cancel_url: `${BASE_URL}/cancel`,
+            metadata: {
+                giveaway: "premium_gold_hoodie_100_orders",
+                giveaway_name: GIVEAWAY_NAME,
+                giveaway_prize: GIVEAWAY_PRIZE,
+                giveaway_target: String(GIVEAWAY_TARGET)
+            }
         });
 
         res.json({ url: session.url });
@@ -365,6 +475,33 @@ app.post("/create-checkout-session", async (req, res) => {
     } catch (err) {
         console.error("STRIPE ERROR:", err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+/* =========================
+   GIVEAWAY PUBLIC API
+========================= */
+
+app.get("/api/order-count", async (req, res) => {
+    try {
+        const progress = await getGiveawayProgress({
+            forceRefresh: req.query.refresh === "1"
+        });
+
+        res.set("Cache-Control", "public, max-age=30");
+
+        res.json({
+            success: true,
+            ...progress
+        });
+
+    } catch (err) {
+        console.error("Giveaway count error:", err);
+
+        res.status(500).json({
+            success: false,
+            error: "Giveaway count is temporarily unavailable"
+        });
     }
 });
 
@@ -384,6 +521,56 @@ app.get("/api/admin/debug-ping", requireAdmin, (req, res) => {
         message: "Admin debug route is working",
         serverTime: new Date().toISOString()
     });
+});
+
+app.get("/api/admin/giveaway/eligible-orders", requireAdmin, async (req, res) => {
+    try {
+        const adminData = readAdminData();
+        const { sessions, hasMore } = await listStripeCheckoutSessions(
+            GIVEAWAY_STRIPE_SESSION_LIMIT
+        );
+
+        const eligibleOrders = sessions
+            .filter((session) => isGiveawayEligibleSession(session, adminData))
+            .map((session) => ({
+                id: session.id,
+                amount_total: session.amount_total || 0,
+                amount_total_pounds: penceToPounds(session.amount_total),
+                currency: session.currency || "gbp",
+                customer_email:
+                    session.customer_details?.email ||
+                    session.customer_email ||
+                    "No email",
+                customer_name: session.customer_details?.name || "No name",
+                phone: session.customer_details?.phone || "No phone",
+                created: session.created,
+                created_iso: session.created
+                    ? new Date(session.created * 1000).toISOString()
+                    : null,
+                payment_status: session.payment_status,
+                checkout_status: session.status,
+                payment_intent: getPaymentIntentId(session),
+                metadata: session.metadata || {}
+            }));
+
+        const progress = await getGiveawayProgress({ forceRefresh: true });
+
+        res.json({
+            success: true,
+            progress,
+            stripeHasMoreAfterThisBatch: hasMore,
+            eligibleOrderCount: eligibleOrders.length,
+            eligibleOrders
+        });
+
+    } catch (err) {
+        console.error("Admin giveaway route failed:", err);
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
 });
 
 app.get("/api/admin/order-debug", requireAdmin, async (req, res) => {
@@ -1058,9 +1245,11 @@ const pages = [
     "admin",
     "admin-dashboard",
     "admin-orders",
+    "admin-giveaway",
     "admin-products",
     "admin-status",
-    "admin-messages"
+    "admin-messages",
+    "admin-tools"
 ];
 
 pages.forEach((page) => {

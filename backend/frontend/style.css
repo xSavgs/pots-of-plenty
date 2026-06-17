@@ -1864,3 +1864,147 @@ select option {
         min-height: 320px;
     }
 }
+/* =========================
+   PREMIUM GOLD HOODIE GIVEAWAY
+========================= */
+
+.giveaway-banner {
+    position: relative;
+    z-index: 2;
+    background:
+        radial-gradient(circle at top left, rgba(255, 211, 117, 0.18), transparent 32%),
+        linear-gradient(135deg, rgba(8, 13, 25, 0.98), rgba(2, 8, 22, 0.96));
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 211, 117, 0.28);
+    padding: 22px 24px;
+    color: #fff;
+}
+
+.giveaway-inner {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 22px;
+    align-items: center;
+}
+
+.giveaway-kicker {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255, 211, 117, 0.45);
+    border-radius: 999px;
+    color: #ffd375;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.giveaway-copy h2 {
+    margin: 0;
+    font-size: clamp(24px, 3vw, 40px);
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.giveaway-copy p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.78);
+    max-width: 680px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.giveaway-progress-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+}
+
+.giveaway-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.giveaway-count {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    line-height: 1;
+    color: #ffd375;
+}
+
+.giveaway-count span {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 18px;
+}
+
+.giveaway-remaining {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
+    text-align: right;
+}
+
+.giveaway-bar {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.giveaway-fill {
+    display: block;
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #8b6a21, #ffd375, #fff0b3);
+    transition: width 0.8s ease;
+}
+
+.giveaway-footnote {
+    margin-top: 9px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+}
+
+.cart-giveaway-note,
+.product-giveaway-note {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border: 1px solid rgba(255, 211, 117, 0.35);
+    border-radius: 12px;
+    background: rgba(255, 211, 117, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.product-giveaway-note {
+    margin-bottom: 12px;
+}
+
+@media (max-width: 800px) {
+    .giveaway-banner {
+        padding: 18px 16px;
+    }
+
+    .giveaway-inner {
+        grid-template-columns: 1fr;
+    }
+
+    .giveaway-progress-top {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .giveaway-remaining {
+        text-align: left;
+    }
+}

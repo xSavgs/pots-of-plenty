@@ -70,6 +70,146 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTopBarTicker();
 
     /* =========================
+       GIVEAWAY COUNTER
+    ========================= */
+
+    function injectGiveawayStyles() {
+        // Giveaway styles now live in style.css.
+    }
+
+    function buildGiveawayBanner() {
+        if (document.getElementById("giveawayBanner")) {
+            return document.getElementById("giveawayBanner");
+        }
+
+        const banner = document.createElement("section");
+        banner.id = "giveawayBanner";
+        banner.className = "giveaway-banner";
+        banner.innerHTML = `
+            <div class="giveaway-inner">
+                <div class="giveaway-copy">
+                    <span class="giveaway-kicker">Premium Gold Hoodie Giveaway</span>
+                    <h2>Win the premium gold hoodie</h2>
+                    <p>
+                        Every paid website order is automatically entered. The winner will be picked at random when the site reaches 100 paid orders.
+                    </p>
+                </div>
+
+                <div class="giveaway-progress-card">
+                    <div class="giveaway-progress-top">
+                        <div class="giveaway-count">
+                            <strong id="giveawayCount">--</strong><span id="giveawayTarget"> / 100</span>
+                        </div>
+                        <div class="giveaway-remaining" id="giveawayRemaining">
+                            Loading order count...
+                        </div>
+                    </div>
+                    <div class="giveaway-bar" aria-hidden="true">
+                        <span class="giveaway-fill" id="giveawayFill"></span>
+                    </div>
+                    <div class="giveaway-footnote" id="giveawayFootnote">
+                        Previous paid website orders are included.
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const hero = document.querySelector(".hero");
+        const productPage = document.querySelector(".product-page");
+        const navbar = document.querySelector(".navbar");
+
+        if (hero) {
+            hero.insertAdjacentElement("afterend", banner);
+        } else if (productPage) {
+            productPage.insertAdjacentElement("beforebegin", banner);
+        } else if (navbar) {
+            navbar.insertAdjacentElement("afterend", banner);
+        } else {
+            document.body.prepend(banner);
+        }
+
+        return banner;
+    }
+
+    function updateGiveawayBanner(progress) {
+        const countEl = document.getElementById("giveawayCount");
+        const targetEl = document.getElementById("giveawayTarget");
+        const remainingEl = document.getElementById("giveawayRemaining");
+        const fillEl = document.getElementById("giveawayFill");
+        const footnoteEl = document.getElementById("giveawayFootnote");
+
+        if (!countEl || !targetEl || !remainingEl || !fillEl || !footnoteEl) return;
+
+        countEl.textContent = progress.displayCount ?? progress.count ?? "--";
+        targetEl.textContent = ` / ${progress.target || 100}`;
+        fillEl.style.width = `${progress.percentage || 0}%`;
+
+        if (progress.reached) {
+            remainingEl.textContent = "Target reached — winner selection pending";
+        } else {
+            remainingEl.textContent = `${progress.remaining} orders to go`;
+        }
+
+        footnoteEl.textContent = progress.stripeHasMoreAfterThisBatch
+            ? "Previous paid website orders are included. Admin note: Stripe has more sessions beyond the current scan limit."
+            : "Previous paid website orders are included. Every new paid order updates the count automatically.";
+    }
+
+    function setupProductGiveawayNote() {
+        const addBtn = document.getElementById("addToCartBtn");
+
+        if (!addBtn || document.getElementById("productGiveawayNote")) return;
+
+        const note = document.createElement("div");
+        note.id = "productGiveawayNote";
+        note.className = "product-giveaway-note";
+        note.innerHTML = "🏆 <strong>Giveaway entry included:</strong> place a paid website order and you are automatically entered for the Premium Gold Hoodie Giveaway.";
+
+        addBtn.insertAdjacentElement("afterend", note);
+    }
+
+    async function setupGiveawayCounter() {
+        injectGiveawayStyles();
+        buildGiveawayBanner();
+        setupProductGiveawayNote();
+
+        try {
+            const res = await fetch("/api/order-count");
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || "Giveaway count unavailable");
+            }
+
+            updateGiveawayBanner(data);
+        } catch (err) {
+            console.error("Giveaway counter failed:", err);
+
+            updateGiveawayBanner({
+                displayCount: "--",
+                target: 100,
+                remaining: "",
+                percentage: 0,
+                reached: false
+            });
+
+            const remainingEl = document.getElementById("giveawayRemaining");
+            const footnoteEl = document.getElementById("giveawayFootnote");
+
+            if (remainingEl) {
+                remainingEl.textContent = "Giveaway is live";
+            }
+
+            if (footnoteEl) {
+                footnoteEl.textContent = "Every paid website order is automatically entered. Count temporarily unavailable.";
+            }
+        }
+    }
+
+    setupGiveawayCounter();
+    setInterval(setupGiveawayCounter, 60000);
+
+    /* =========================
        PRODUCTS
     ========================= */
 
@@ -214,6 +354,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? `<div class="cart-delivery-note">Spend £${DELIVERY_THRESHOLD.toFixed(2)} or more to remove the extra charge.</div>`
                     : `<div class="cart-delivery-note">No delivery / handling charge added.</div>`
             }
+
+            <div class="cart-giveaway-note">
+                🏆 This paid order automatically enters you into the Premium Gold Hoodie Giveaway.
+            </div>
         `;
 
         if (checkoutBtn) {

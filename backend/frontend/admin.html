@@ -1,49 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin — Pots of Plenty</title>
-    
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <meta charset="UTF-8">
+    <title>Admin Login — Pots of Plenty</title>
 
-    <link rel="stylesheet" href="/style.css" />
-    <script src="/admin.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/style.css?v=11">
+    <link rel="stylesheet" href="/admin.css?v=11">
+
+    <style>
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,0.08), transparent 34%),
+                #020816;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 460px;
+            padding: 34px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 30px 100px rgba(0,0,0,0.35);
+        }
+
+        .login-card img {
+            width: 105px;
+            margin: 0 auto 22px;
+        }
+
+        .login-card h1 {
+            text-align: center;
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .login-card p {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+            margin-bottom: 26px;
+        }
+
+        .login-card label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.78);
+            font-weight: 700;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            font: inherit;
+            margin-bottom: 16px;
+        }
+
+        .login-card button {
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .login-error {
+            display: none;
+            margin-top: 16px;
+            padding: 13px;
+            border-radius: 12px;
+            background: rgba(214,56,56,0.16);
+            border: 1px solid rgba(214,56,56,0.35);
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
+    <main class="login-wrap">
+        <form class="login-card" id="loginForm">
+            <img src="/assets/logo.png" alt="Pots of Plenty">
+            <h1>Admin Login</h1>
+            <p>Sign in to manage orders, messages, products, giveaway entries and API tools.</p>
 
-<section class="section" style="max-width:500px; margin:auto; padding:120px 20px;">
+            <label for="username">Username</label>
+            <input id="username" name="username" autocomplete="username" required>
 
-    <h1 style="margin-bottom:30px;">Admin Login</h1>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
 
-    <form id="loginForm">
+            <button class="admin-btn primary" id="loginBtn" type="submit">Login</button>
 
-        <input
-            type="text"
-            id="username"
-            placeholder="Username"
-            required
-            style="width:100%;padding:14px;margin-bottom:15px;"
-        />
+            <div class="login-error" id="loginError">Login failed. Check the username and password.</div>
+        </form>
+    </main>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-            style="width:100%;padding:14px;margin-bottom:15px;"
-        />
+    <script>
+        const existingToken = localStorage.getItem("adminToken") || localStorage.getItem("admin_token");
 
-        <button class="hero-btn" type="submit">
-            LOGIN
-        </button>
+        if (existingToken) {
+            window.location.href = "/admin-dashboard";
+        }
 
-    </form>
+        const loginForm = document.getElementById("loginForm");
+        const loginBtn = document.getElementById("loginBtn");
+        const loginError = document.getElementById("loginError");
 
-    <p id="message" style="margin-top:20px;"></p>
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-</section>
+            loginBtn.disabled = true;
+            loginBtn.textContent = "Checking...";
+            loginError.style.display = "none";
 
+            try {
+                const res = await fetch("/api/admin/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value,
+                        password: document.getElementById("password").value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success || !data.token) {
+                    throw new Error("Login failed");
+                }
+
+                localStorage.setItem("adminToken", data.token);
+                localStorage.removeItem("admin_token");
+                window.location.href = "/admin-dashboard";
+            } catch (err) {
+                console.error(err);
+                loginError.style.display = "block";
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Login";
+            }
+        });
+    </script>
 </body>
 </html>

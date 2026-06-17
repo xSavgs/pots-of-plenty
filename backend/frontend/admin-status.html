@@ -5,9 +5,9 @@
     <title>Admin Status — Pots of Plenty</title>
     
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-    <link rel="stylesheet" href="/style.css?v=10">
-    <link rel="stylesheet" href="/admin.css?v=10">
-    <script src="/admin-shell.js?v=10"></script>
+    <link rel="stylesheet" href="/style.css?v=11">
+    <link rel="stylesheet" href="/admin.css?v=11">
+    <script src="/admin-shell.js?v=11"></script>
 
     <style>
         .admin-status-wrap {
@@ -206,9 +206,10 @@
             <p style="opacity:.7;">Server, Stripe, Railway and vessel tracking health.</p>
         </div>
 
-        <a href="/admin-dashboard" class="hero-btn">
-            ← Back to Dashboard
-        </a>
+        <div class="admin-actions">
+            <a href="/admin-tools" class="admin-btn">API Tools</a>
+            <a href="/admin-dashboard" class="hero-btn">← Back to Dashboard</a>
+        </div>
     </div>
 
     <div class="admin-controls">
@@ -216,8 +217,12 @@
             Refresh Status
         </button>
 
-        <a href="/api/admin/status" class="small-btn" target="_blank" rel="noopener noreferrer">
+        <button class="small-btn" id="rawStatusBtn">
             Raw API
+        </button>
+
+        <a href="/admin-tools" class="small-btn">
+            All API Tools
         </a>
 
         <span class="muted" id="lastChecked">
@@ -242,6 +247,7 @@ if (!token) {
 
 const statusBox = document.getElementById("status");
 const refreshBtn = document.getElementById("refreshBtn");
+const rawStatusBtn = document.getElementById("rawStatusBtn");
 const lastChecked = document.getElementById("lastChecked");
 
 function escapeHTML(value) {
@@ -574,6 +580,15 @@ async function loadStatus() {
 }
 
 refreshBtn.addEventListener("click", loadStatus);
+
+rawStatusBtn.addEventListener("click", async () => {
+    const res = await window.adminFetch("/api/admin/status");
+    if (!res) return;
+
+    const data = await res.json();
+    statusBox.innerHTML = `<pre class="admin-raw-output">${escapeHTML(JSON.stringify(data, null, 2))}</pre>`;
+    lastChecked.textContent = `Raw API checked: ${new Date().toLocaleString()}`;
+});
 
 loadStatus();
 

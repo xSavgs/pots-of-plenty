@@ -91,9 +91,15 @@
             <nav class="admin-nav">
                 ${adminNavItem("/admin-dashboard", "Dashboard", "📊")}
                 ${adminNavItem("/admin-orders", "Orders", "🧾")}
+                ${adminNavItem("/admin-giveaway", "Giveaway", "🏆")}
                 ${adminNavItem("/admin-products", "Products", "👕")}
                 ${adminNavItem("/admin-messages", "Messages", "✉️")}
                 ${adminNavItem("/admin-status", "Status", "🟢")}
+                ${adminNavItem("/admin-tools", "API Tools", "🛠️")}
+
+                <a href="/api/order-count" target="_blank" rel="noopener noreferrer">
+                    📈 Public Order Count
+                </a>
 
                 <a href="/track" target="_blank" rel="noopener noreferrer">
                     📡 Vessel Tracking
@@ -109,7 +115,7 @@
             </nav>
 
             <div class="admin-sidebar-footer">
-                Logged in securely<br>
+                Protected admin endpoints use your Bearer token automatically from inside this panel.<br>
                 Pots of Plenty Admin
             </div>
         `;

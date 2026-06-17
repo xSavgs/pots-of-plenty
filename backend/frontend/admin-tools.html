@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin API Tools — Pots of Plenty</title>
+
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/style.css?v=11">
+    <link rel="stylesheet" href="/admin.css?v=11">
+    <script src="/admin-shell.js?v=11"></script>
+</head>
+
+<body>
+
+<header class="admin-header">
+    <div>
+        <h1>API Tools</h1>
+        <p>Clickable access to every public and protected endpoint currently used by the site.</p>
+        <p class="admin-muted">Protected API buttons use your admin token automatically through <code class="endpoint-code">window.adminFetch()</code>.</p>
+    </div>
+
+    <div class="admin-actions">
+        <button class="admin-btn" id="checkAllBtn">Check Main GET APIs</button>
+        <button class="admin-btn" id="copyLastBtn">Copy Last Response</button>
+        <a href="/admin-dashboard" class="admin-btn primary">Dashboard</a>
+    </div>
+</header>
+
+<section class="admin-panel">
+    <h2>Endpoint Coverage</h2>
+    <p class="admin-muted">
+        Normal page buttons are listed for endpoints that need IDs or POST bodies, because those should be used through the Orders, Messages, Cart or Contact screens rather than hit manually.
+    </p>
+</section>
+
+<div id="endpointGrid" class="admin-grid-3"></div>
+
+<pre id="rawOutput" class="admin-raw-output">Click an endpoint button to see the response here.</pre>
+
+<script>
+let lastResponseText = "";
+
+const endpointGrid = document.getElementById("endpointGrid");
+const rawOutput = document.getElementById("rawOutput");
+const checkAllBtn = document.getElementById("checkAllBtn");
+const copyLastBtn = document.getElementById("copyLastBtn");
+
+const endpoints = [
+    {
+        title: "Admin Verify",
+        method: "GET",
+        path: "/api/admin/verify",
+        auth: true,
+        kind: "fetch",
+        description: "Checks the current admin token."
+    },
+    {
+        title: "Admin Dashboard",
+        method: "GET",
+        path: "/api/admin/dashboard",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-dashboard",
+        description: "Dashboard totals, recent orders, messages, health and vessel snapshot."
+    },
+    {
+        title: "Admin Orders",
+        method: "GET",
+        path: "/api/admin/orders",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-orders",
+        description: "Hydrated Stripe orders with items and fulfilment notes."
+    },
+    {
+        title: "Admin Raw Orders",
+        method: "GET",
+        path: "/api/admin/raw-orders",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-orders",
+        description: "Raw Stripe Checkout Session data for deeper diagnostics."
+    },
+    {
+        title: "Admin Order Debug",
+        method: "GET",
+        path: "/api/admin/order-debug",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-orders",
+        description: "Protected order diagnostics including paid/unpaid summaries."
+    },
+    {
+        title: "Save Order Status",
+        method: "POST",
+        path: "/api/admin/orders/:orderId/status",
+        auth: true,
+        kind: "page",
+        page: "/admin-orders",
+        description: "Used from the Orders details panel to mark packed, ready, collected, refunded etc."
+    },
+    {
+        title: "Giveaway Entries",
+        method: "GET",
+        path: "/api/admin/giveaway/eligible-orders",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-giveaway",
+        description: "All paid non-refunded orders eligible for the hoodie giveaway."
+    },
+    {
+        title: "Admin Messages",
+        method: "GET",
+        path: "/api/admin/messages",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-messages",
+        description: "Customer enquiries saved from the contact form."
+    },
+    {
+        title: "Mark Message Read",
+        method: "POST",
+        path: "/api/admin/messages/:messageId/read",
+        auth: true,
+        kind: "page",
+        page: "/admin-messages",
+        description: "Used from Messages to mark customer enquiries read or unread."
+    },
+    {
+        title: "Delete Message",
+        method: "DELETE",
+        path: "/api/admin/messages/:messageId",
+        auth: true,
+        kind: "page",
+        page: "/admin-messages",
+        description: "Used from Messages to move/delete a saved enquiry from admin data."
+    },
+    {
+        title: "Admin Products",
+        method: "GET",
+        path: "/api/admin/products",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-products",
+        description: "Current product catalogue used by the admin product screen."
+    },
+    {
+        title: "Admin Status",
+        method: "GET",
+        path: "/api/admin/status",
+        auth: true,
+        kind: "fetch",
+        page: "/admin-status",
+        description: "Server, Stripe, Railway env and AIS tracking health."
+    },
+    {
+        title: "Admin Debug Ping",
+        method: "GET",
+        path: "/api/admin/debug-ping",
+        auth: true,
+        kind: "fetch",
+        description: "Simple protected ping route for admin diagnostics."
+    },
+    {
+        title: "Public Order Count",
+        method: "GET",
+        path: "/api/order-count",
+        auth: false,
+        kind: "fetch",
+        open: true,
+        description: "Live public giveaway progress used by the website banner."
+    },
+    {
+        title: "Create Checkout Session",
+        method: "POST",
+        path: "/create-checkout-session",
+        auth: false,
+        kind: "page",
+        page: "/shop",
+        description: "Used by the cart checkout button. Needs cart items in the POST body."
+    },
+    {
+        title: "Contact Form",
+        method: "POST",
+        path: "/api/contact",
+        auth: false,
+        kind: "page",
+        page: "/contact",
+        description: "Used by the customer contact form to save enquiries."
+    },
+    {
+        title: "Vessel Tracking",
+        method: "GET",
+        path: "/api/vessel",
+        auth: false,
+        kind: "fetch",
+        open: true,
+        page: "/track",
+        description: "Latest AIS vessel position used by the tracking page."
+    },
+    {
+        title: "Admin Login",
+        method: "POST",
+        path: "/api/admin/login",
+        auth: false,
+        kind: "page",
+        page: "/admin",
+        description: "Used by the admin login screen. Needs username and password body."
+    }
+];
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function methodBadge(method) {
+    const type = method === "GET" ? "good" : method === "DELETE" ? "bad" : "warning";
+    return `<span class="admin-badge badge-${type}">${escapeHTML(method)}</span>`;
+}
+
+function renderEndpoints() {
+    endpointGrid.innerHTML = endpoints.map((endpoint, index) => `
+        <article class="admin-api-card">
+            <div class="admin-actions" style="justify-content:space-between;">
+                <h3>${escapeHTML(endpoint.title)}</h3>
+                ${methodBadge(endpoint.method)}
+            </div>
+
+            <code>${escapeHTML(endpoint.path)}</code>
+
+            <p class="admin-muted">${escapeHTML(endpoint.description)}</p>
+
+            <div class="admin-actions">
+                ${endpoint.kind === "fetch" ? `
+                    <button class="admin-small-btn primary fetch-endpoint" data-index="${index}">
+                        Fetch JSON
+                    </button>
+                ` : ""}
+
+                ${endpoint.open ? `
+                    <a class="admin-small-btn" href="${escapeHTML(endpoint.path)}" target="_blank" rel="noopener noreferrer">
+                        Open Raw
+                    </a>
+                ` : ""}
+
+                ${endpoint.page ? `
+                    <a class="admin-small-btn" href="${escapeHTML(endpoint.page)}" ${endpoint.page === "/shop" || endpoint.page === "/track" || endpoint.page === "/contact" ? 'target="_blank" rel="noopener noreferrer"' : ""}>
+                        Open Page
+                    </a>
+                ` : ""}
+
+                <button class="admin-small-btn copy-path" data-index="${index}">
+                    Copy Path
+                </button>
+            </div>
+        </article>
+    `).join("");
+}
+
+async function fetchEndpoint(endpoint) {
+    rawOutput.textContent = `Fetching ${endpoint.method} ${endpoint.path}...`;
+
+    try {
+        const res = endpoint.auth
+            ? await window.adminFetch(endpoint.path)
+            : await fetch(endpoint.path);
+
+        if (!res) return;
+
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+            ? await res.json()
+            : await res.text();
+
+        lastResponseText = typeof data === "string"
+            ? data
+            : JSON.stringify(data, null, 2);
+
+        rawOutput.textContent = `${endpoint.method} ${endpoint.path}\nHTTP ${res.status}\n\n${lastResponseText}`;
+    } catch (err) {
+        lastResponseText = String(err);
+        rawOutput.textContent = `Endpoint failed:\n${lastResponseText}`;
+    }
+}
+
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert("Copied");
+    } catch {
+        prompt("Copy text:", text);
+    }
+}
+
+async function checkAllMainApis() {
+    const mainChecks = endpoints.filter(endpoint => endpoint.kind === "fetch");
+    const results = [];
+
+    for (const endpoint of mainChecks) {
+        try {
+            const res = endpoint.auth
+                ? await window.adminFetch(endpoint.path)
+                : await fetch(endpoint.path);
+
+            results.push({
+                method: endpoint.method,
+                path: endpoint.path,
+                ok: Boolean(res && res.ok),
+                status: res ? res.status : "no response"
+            });
+        } catch (err) {
+            results.push({
+                method: endpoint.method,
+                path: endpoint.path,
+                ok: false,
+                error: err.message
+            });
+        }
+    }
+
+    lastResponseText = JSON.stringify(results, null, 2);
+    rawOutput.textContent = lastResponseText;
+}
+
+endpointGrid.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+    if (!button) return;
+
+    const endpoint = endpoints[Number(button.dataset.index)];
+    if (!endpoint) return;
+
+    if (button.classList.contains("fetch-endpoint")) {
+        fetchEndpoint(endpoint);
+    }
+
+    if (button.classList.contains("copy-path")) {
+        copyText(endpoint.path);
+    }
+});
+
+checkAllBtn.addEventListener("click", checkAllMainApis);
+copyLastBtn.addEventListener("click", () => copyText(lastResponseText || rawOutput.textContent));
+
+renderEndpoints();
+</script>
+
+</body>
+</html>

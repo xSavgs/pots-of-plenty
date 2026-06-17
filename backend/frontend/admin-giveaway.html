@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Giveaway — Pots of Plenty</title>
+
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/style.css?v=11">
+    <link rel="stylesheet" href="/admin.css?v=11">
+    <script src="/admin-shell.js?v=11"></script>
+</head>
+
+<body>
+
+<header class="admin-header">
+    <div>
+        <h1>Giveaway</h1>
+        <p>Premium Gold Hoodie draw progress, eligible paid orders and export tools.</p>
+        <p class="admin-muted" id="lastChecked">Loading giveaway...</p>
+    </div>
+
+    <div class="admin-actions">
+        <button class="admin-btn" id="refreshBtn">Refresh</button>
+        <button class="admin-btn" id="copyEntriesBtn">Copy Entries</button>
+        <button class="admin-btn" id="downloadCsvBtn">Download CSV</button>
+        <a href="/api/order-count" target="_blank" rel="noopener noreferrer" class="admin-btn primary">Public Count API</a>
+    </div>
+</header>
+
+<div id="giveawayProgress">
+    <div class="admin-loading">Loading giveaway progress...</div>
+</div>
+
+<div class="admin-grid-2">
+    <section class="admin-panel">
+        <h2>Eligible Orders</h2>
+        <p class="admin-muted">
+            These are paid Stripe Checkout Sessions that have not been marked as refunded in the admin order status.
+        </p>
+        <div style="margin-top:16px;" class="admin-actions">
+            <button class="admin-small-btn" id="fetchRawBtn">Fetch Raw Admin JSON</button>
+            <button class="admin-small-btn" id="copyRawBtn">Copy Raw JSON</button>
+            <a href="/admin-orders" class="admin-small-btn">Manage Fulfilment</a>
+        </div>
+    </section>
+
+    <section class="admin-panel">
+        <h2>Winner Rules Reminder</h2>
+        <div class="admin-row">
+            <span>Entry method</span>
+            <strong>Every paid website order</strong>
+        </div>
+        <div class="admin-row">
+            <span>Previous orders</span>
+            <strong>Included</strong>
+        </div>
+        <div class="admin-row">
+            <span>Refunded orders</span>
+            <strong>Excluded if marked refunded</strong>
+        </div>
+        <div class="admin-row">
+            <span>Prize</span>
+            <strong>Premium Gold Hoodie</strong>
+        </div>
+    </section>
+</div>
+
+<div id="ordersBox">
+    <div class="admin-loading">Loading eligible orders...</div>
+</div>
+
+<pre id="rawOutput" class="admin-raw-output" style="display:none;"></pre>
+
+<script>
+let giveawayData = null;
+let eligibleOrders = [];
+let rawAdminJson = null;
+
+const giveawayProgress = document.getElementById("giveawayProgress");
+const ordersBox = document.getElementById("ordersBox");
+const rawOutput = document.getElementById("rawOutput");
+const lastChecked = document.getElementById("lastChecked");
+
+const refreshBtn = document.getElementById("refreshBtn");
+const copyEntriesBtn = document.getElementById("copyEntriesBtn");
+const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+const fetchRawBtn = document.getElementById("fetchRawBtn");
+const copyRawBtn = document.getElementById("copyRawBtn");
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function moneyFromPence(value) {
+    return `£${(Number(value || 0) / 100).toFixed(2)}`;
+}
+
+function progressCard(data) {
+    const percentage = Math.max(0, Math.min(Number(data.percentage || 0), 100));
+    const reached = Boolean(data.reached);
+
+    return `
+        <div class="admin-grid-4">
+            <div class="admin-card ${reached ? "status-good" : "status-warning"}">
+                <span>Giveaway Progress</span>
+                <strong>${escapeHTML(data.displayCount ?? data.count ?? 0)} / ${escapeHTML(data.target ?? 100)}</strong>
+            </div>
+
+            <div class="admin-card">
+                <span>Remaining</span>
+                <strong>${escapeHTML(data.remaining ?? 0)}</strong>
+            </div>
+
+            <div class="admin-card">
+                <span>Progress</span>
+                <strong>${percentage}%</strong>
+            </div>
+
+            <div class="admin-card ${reached ? "status-good" : ""}">
+                <span>Status</span>
+                <strong>${reached ? "Target Hit" : "Running"}</strong>
+            </div>
+        </div>
+
+        <section class="admin-panel">
+            <h2>${escapeHTML(data.giveawayName || "Premium Gold Hoodie Giveaway")}</h2>
+            <p class="admin-muted">${escapeHTML(data.message || "Every paid website order is automatically entered.")}</p>
+
+            <div style="margin-top:18px;height:16px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;">
+                <div style="width:${percentage}%;height:100%;background:white;border-radius:999px;"></div>
+            </div>
+
+            <div class="admin-grid-3" style="margin-bottom:0;">
+                <div class="admin-row">
+                    <span>Stripe paid orders</span>
+                    <strong>${escapeHTML(data.stripePaidOrderCount ?? 0)}</strong>
+                </div>
+
+                <div class="admin-row">
+                    <span>Manual extra orders</span>
+                    <strong>${escapeHTML(data.manualExtraOrders ?? 0)}</strong>
+                </div>
+
+                <div class="admin-row">
+                    <span>Cached for</span>
+                    <strong>${escapeHTML(data.cachedForSeconds ?? 60)}s</strong>
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function renderOrders() {
+    if (!eligibleOrders.length) {
+        ordersBox.innerHTML = `
+            <div class="admin-empty">
+                No eligible paid giveaway orders found yet.
+            </div>
+        `;
+        return;
+    }
+
+    ordersBox.innerHTML = `
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                        <th>Order ID</th>
+                        <th>Stripe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${eligibleOrders.map((order, index) => `
+                        <tr>
+                            <td><strong>${index + 1}</strong></td>
+                            <td>
+                                <strong>${escapeHTML(order.customer_name || "No name")}</strong>
+                                <div class="admin-muted">${escapeHTML(order.customer_email || "No email")}</div>
+                                <div class="admin-muted">${escapeHTML(order.phone || "No phone")}</div>
+                            </td>
+                            <td><strong>${moneyFromPence(order.amount_total)}</strong></td>
+                            <td>${order.created ? new Date(order.created * 1000).toLocaleString() : "Unknown"}</td>
+                            <td><code>${escapeHTML(order.id)}</code></td>
+                            <td>
+                                ${order.payment_intent ? `
+                                    <a class="admin-small-btn" href="https://dashboard.stripe.com/payments/${encodeURIComponent(order.payment_intent)}" target="_blank" rel="noopener noreferrer">
+                                        Open
+                                    </a>
+                                ` : `<span class="admin-muted">No payment intent</span>`}
+                            </td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function entriesText() {
+    if (!eligibleOrders.length) return "No eligible entries";
+
+    return eligibleOrders.map((order, index) => {
+        return [
+            `Entry ${index + 1}`,
+            `Name: ${order.customer_name || "No name"}`,
+            `Email: ${order.customer_email || "No email"}`,
+            `Phone: ${order.phone || "No phone"}`,
+            `Total: ${moneyFromPence(order.amount_total)}`,
+            `Order ID: ${order.id}`,
+            `Date: ${order.created ? new Date(order.created * 1000).toLocaleString() : "Unknown"}`
+        ].join("\n");
+    }).join("\n\n--------------------\n\n");
+}
+
+function csvValue(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function downloadCsv() {
+    const rows = [
+        ["Entry", "Name", "Email", "Phone", "Total", "Order ID", "Payment Intent", "Date"]
+    ];
+
+    eligibleOrders.forEach((order, index) => {
+        rows.push([
+            index + 1,
+            order.customer_name || "",
+            order.customer_email || "",
+            order.phone || "",
+            moneyFromPence(order.amount_total),
+            order.id || "",
+            order.payment_intent || "",
+            order.created ? new Date(order.created * 1000).toISOString() : ""
+        ]);
+    });
+
+    const csv = rows.map(row => row.map(csvValue).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "pots-giveaway-eligible-orders.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert("Copied");
+    } catch {
+        prompt("Copy text:", text);
+    }
+}
+
+async function loadGiveaway() {
+    giveawayProgress.innerHTML = `<div class="admin-loading">Loading giveaway progress...</div>`;
+    ordersBox.innerHTML = `<div class="admin-loading">Loading eligible orders...</div>`;
+
+    try {
+        const [publicRes, adminRes] = await Promise.all([
+            fetch("/api/order-count"),
+            window.adminFetch("/api/admin/giveaway/eligible-orders")
+        ]);
+
+        if (!adminRes) return;
+
+        const publicData = await publicRes.json();
+        const adminData = await adminRes.json();
+
+        giveawayData = publicData;
+        rawAdminJson = adminData;
+        eligibleOrders = adminData.orders || adminData.eligibleOrders || [];
+
+        giveawayProgress.innerHTML = progressCard(publicData);
+        renderOrders();
+
+        lastChecked.textContent = `Last checked: ${new Date().toLocaleString()}`;
+    } catch (err) {
+        console.error(err);
+        giveawayProgress.innerHTML = `<div class="admin-empty">Could not load giveaway progress.</div>`;
+        ordersBox.innerHTML = `<div class="admin-empty">Could not load eligible orders.</div>`;
+    }
+}
+
+async function fetchRaw() {
+    const res = await window.adminFetch("/api/admin/giveaway/eligible-orders");
+    if (!res) return;
+
+    const data = await res.json();
+    rawAdminJson = data;
+    rawOutput.style.display = "block";
+    rawOutput.textContent = JSON.stringify(data, null, 2);
+}
+
+refreshBtn.addEventListener("click", loadGiveaway);
+copyEntriesBtn.addEventListener("click", () => copyText(entriesText()));
+downloadCsvBtn.addEventListener("click", downloadCsv);
+fetchRawBtn.addEventListener("click", fetchRaw);
+copyRawBtn.addEventListener("click", () => copyText(JSON.stringify(rawAdminJson || {}, null, 2)));
+
+loadGiveaway();
+setInterval(loadGiveaway, 60000);
+</script>
+
+</body>
+</html>
