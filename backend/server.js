@@ -161,12 +161,201 @@ let giveawayProgressCache = {
     data: null
 };
 
-function isGiveawayEligibleSession(session, adminData) {
-    const savedStatus = adminData.orderStatuses?.[session.id] || {};
+let stripeRefundInfoCache = new Map();
 
-    return (
-        session.payment_status === "paid" &&
-        savedStatus.fulfilment !== "refunded"
+function getBlankStripeRefundInfo(overrides = {}) {
+    return {
+        checked: false,
+        check_status: "not_checked",
+        refunded: false,
+        fully_refunded: false,
+        partially_refunded: false,
+        refund_type: "none",
+        amount_refunded: 0,
+        amount_refunded_pounds: 0,
+        charge_amount: 0,
+        charge_amount_pounds: 0,
+        payment_intent: "",
+        charge_id: "",
+        charge_status: "unknown",
+        payment_intent_status: "unknown",
+        error: "",
+        checked_at: null,
+        ...overrides
+    };
+}
+
+async function getStripeRefundInfoForSession(session) {
+    const paymentIntentId = getPaymentIntentId(session);
+
+    if (!paymentIntentId) {
+        return getBlankStripeRefundInfo({
+            check_status: "missing_payment_intent"
+        });
+    }
+
+    const cached = stripeRefundInfoCache.get(paymentIntentId);
+
+    if (cached && Date.now() < cached.expiresAt) {
+        return cached.data;
+    }
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentId,
+        {
+            expand: ["latest_charge"]
+        }
+    );
+
+    const latestCharge =
+        paymentIntent.latest_charge &&
+        typeof paymentIntent.latest_charge === "object"
+            ? paymentIntent.latest_charge
+            : null;
+
+    const chargeAmount = Number(
+        latestCharge?.amount ||
+        paymentIntent.amount ||
+        session.amount_total ||
+        0
+    );
+
+    const amountRefunded = Number(latestCharge?.amount_refunded || 0);
+    const refunded = latestCharge?.refunded === true || amountRefunded > 0;
+    const fullyRefunded = refunded && chargeAmount > 0 && amountRefunded >= chargeAmount;
+    const partiallyRefunded = refunded && !fullyRefunded;
+
+    const data = getBlankStripeRefundInfo({
+        checked: true,
+        check_status: "checked",
+        refunded,
+        fully_refunded: fullyRefunded,
+        partially_refunded: partiallyRefunded,
+        refund_type: refunded
+            ? fullyRefunded
+                ? "full"
+                : "partial"
+            : "none",
+        amount_refunded: amountRefunded,
+        amount_refunded_pounds: penceToPounds(amountRefunded),
+        charge_amount: chargeAmount,
+        charge_amount_pounds: penceToPounds(chargeAmount),
+        payment_intent: paymentIntentId,
+        charge_id: latestCharge?.id || "",
+        charge_status: latestCharge?.status || "unknown",
+        payment_intent_status: paymentIntent.status || "unknown",
+        checked_at: new Date().toISOString()
+    });
+
+    stripeRefundInfoCache.set(paymentIntentId, {
+        expiresAt: Date.now() + GIVEAWAY_CACHE_MS,
+        data
+    });
+
+    return data;
+}
+
+async function getSafeStripeRefundInfoForSession(session) {
+    try {
+        return await getStripeRefundInfoForSession(session);
+    } catch (err) {
+        return getBlankStripeRefundInfo({
+            checked: false,
+            check_status: "error",
+            error: err.message || "Stripe refund check failed",
+            payment_intent: getPaymentIntentId(session)
+        });
+    }
+}
+
+async function classifyGiveawaySession(session, adminData, options = {}) {
+    const strictRefundCheck = options.strictRefundCheck !== false;
+    const savedStatus = adminData.orderStatuses?.[session.id] || {};
+    const paid = session.payment_status === "paid";
+    const manualRefunded = savedStatus.fulfilment === "refunded";
+
+    const stripeRefund = paid
+        ? strictRefundCheck
+            ? await getStripeRefundInfoForSession(session)
+            : await getSafeStripeRefundInfoForSession(session)
+        : getBlankStripeRefundInfo({
+            check_status: "skipped_not_paid",
+            payment_intent: getPaymentIntentId(session)
+        });
+
+    const stripeRefunded = Boolean(stripeRefund.refunded);
+    const refundCheckFailed = paid && stripeRefund.check_status === "error";
+
+    let exclusionReason = null;
+
+    if (!paid) {
+        exclusionReason = "not_paid";
+    } else if (manualRefunded) {
+        exclusionReason = "manual_refunded";
+    } else if (stripeRefunded) {
+        exclusionReason = `stripe_${stripeRefund.refund_type}_refund`;
+    } else if (refundCheckFailed) {
+        exclusionReason = "stripe_refund_check_failed";
+    }
+
+    return {
+        eligible: paid && !manualRefunded && !stripeRefunded && !refundCheckFailed,
+        paid,
+        manualRefunded,
+        stripeRefunded,
+        refundCheckFailed,
+        exclusionReason,
+        savedStatus,
+        stripeRefund
+    };
+}
+
+function toGiveawayOrder(session, classification) {
+    return {
+        id: session.id,
+        amount_total: session.amount_total || 0,
+        amount_total_pounds: penceToPounds(session.amount_total),
+        currency: session.currency || "gbp",
+        customer_email:
+            session.customer_details?.email ||
+            session.customer_email ||
+            "No email",
+        customer_name: session.customer_details?.name || "No name",
+        phone: session.customer_details?.phone || "No phone",
+        created: session.created,
+        created_iso: session.created
+            ? new Date(session.created * 1000).toISOString()
+            : null,
+        payment_status: session.payment_status,
+        checkout_status: session.status,
+        payment_intent: getPaymentIntentId(session),
+        metadata: session.metadata || {},
+        giveaway_eligible: classification.eligible,
+        exclusion_reason: classification.exclusionReason,
+        admin: {
+            fulfilment: classification.savedStatus.fulfilment || "new",
+            note: classification.savedStatus.note || "",
+            updatedAt: classification.savedStatus.updatedAt || null
+        },
+        stripe_refund: classification.stripeRefund
+    };
+}
+
+async function getGiveawayClassifications(sessions, adminData, options = {}) {
+    return Promise.all(
+        sessions.map(async (session) => {
+            const classification = await classifyGiveawaySession(
+                session,
+                adminData,
+                options
+            );
+
+            return {
+                session,
+                classification,
+                order: toGiveawayOrder(session, classification)
+            };
+        })
     );
 }
 
@@ -188,12 +377,22 @@ async function getGiveawayProgress({ forceRefresh = false } = {}) {
         GIVEAWAY_STRIPE_SESSION_LIMIT
     );
 
-    const eligibleSessions = sessions.filter((session) => {
-        return isGiveawayEligibleSession(session, adminData);
-    });
+    const giveawayRows = await getGiveawayClassifications(
+        sessions,
+        adminData,
+        {
+            strictRefundCheck: false
+        }
+    );
 
-    const stripePaidOrderCount = eligibleSessions.length;
-    const count = stripePaidOrderCount + GIVEAWAY_EXTRA_ORDERS;
+    const paidRows = giveawayRows.filter((row) => row.classification.paid);
+    const eligibleRows = giveawayRows.filter((row) => row.classification.eligible);
+    const manualRefundedRows = giveawayRows.filter((row) => row.classification.manualRefunded);
+    const stripeRefundedRows = giveawayRows.filter((row) => row.classification.stripeRefunded);
+    const refundCheckFailedRows = giveawayRows.filter((row) => row.classification.refundCheckFailed);
+
+    const stripeEligibleOrderCount = eligibleRows.length;
+    const count = stripeEligibleOrderCount + GIVEAWAY_EXTRA_ORDERS;
     const displayCount = Math.min(count, GIVEAWAY_TARGET);
     const remaining = Math.max(GIVEAWAY_TARGET - count, 0);
     const percentage = Math.min(
@@ -210,15 +409,20 @@ async function getGiveawayProgress({ forceRefresh = false } = {}) {
         remaining,
         percentage,
         reached: count >= GIVEAWAY_TARGET,
-        stripePaidOrderCount,
+        stripePaidOrderCount: paidRows.length,
+        stripeEligibleOrderCount,
+        stripeRefundedExcludedCount: stripeRefundedRows.length,
+        manualRefundedExcludedCount: manualRefundedRows.length,
+        refundCheckFailedCount: refundCheckFailedRows.length,
         manualExtraOrders: GIVEAWAY_EXTRA_ORDERS,
         stripeSessionLimit: GIVEAWAY_STRIPE_SESSION_LIMIT,
         stripeHasMoreAfterThisBatch: hasMore,
         cachedForSeconds: Math.floor(GIVEAWAY_CACHE_MS / 1000),
         updatedAt: new Date().toISOString(),
+        refundRule: "Paid orders are excluded from the giveaway if Stripe shows any refund on the linked charge or if the admin fulfilment status is marked refunded.",
         message: count >= GIVEAWAY_TARGET
-            ? "The giveaway target has been reached. Winner selection can now be handled from the admin side."
-            : "Every paid website order is automatically entered into the Premium Gold Hoodie Giveaway."
+            ? "The giveaway target has been reached. Winner selection can now be handled from the admin side. Refunded orders are excluded."
+            : "Every paid non-refunded website order is automatically entered into the Premium Gold Hoodie Giveaway."
     };
 
     giveawayProgressCache = {
@@ -274,6 +478,7 @@ async function listStripeCheckoutSessions(maxSessions = 100) {
 async function hydrateStripeSession(session, adminData, options = {}) {
     const includeLineItems = options.includeLineItems !== false;
     const includeRaw = options.includeRaw === true;
+    const includeRefundInfo = options.includeRefundInfo === true;
 
     let items = [];
 
@@ -297,6 +502,14 @@ async function hydrateStripeSession(session, adminData, options = {}) {
 
     const savedStatus = adminData.orderStatuses[session.id] || {};
     const paymentIntent = getPaymentIntentId(session);
+    const stripeRefund = includeRefundInfo
+        ? await getSafeStripeRefundInfoForSession(session)
+        : getBlankStripeRefundInfo({
+            check_status: "not_requested",
+            payment_intent: paymentIntent
+        });
+    const manualRefunded = savedStatus.fulfilment === "refunded";
+    const stripeRefunded = Boolean(stripeRefund.refunded);
 
     const order = {
         id: session.id,
@@ -319,6 +532,16 @@ async function hydrateStripeSession(session, adminData, options = {}) {
             : null,
         metadata: session.metadata || {},
         items,
+        stripe_refund: stripeRefund,
+        refund_status: manualRefunded
+            ? "manual_refunded"
+            : stripeRefunded
+                ? `stripe_${stripeRefund.refund_type}_refund`
+                : "not_refunded",
+        giveaway_eligible: session.payment_status === "paid" &&
+            !manualRefunded &&
+            !stripeRefunded &&
+            stripeRefund.check_status !== "error",
         admin: {
             fulfilment: savedStatus.fulfilment || "new",
             note: savedStatus.note || "",
@@ -530,28 +753,35 @@ app.get("/api/admin/giveaway/eligible-orders", requireAdmin, async (req, res) =>
             GIVEAWAY_STRIPE_SESSION_LIMIT
         );
 
-        const eligibleOrders = sessions
-            .filter((session) => isGiveawayEligibleSession(session, adminData))
-            .map((session) => ({
-                id: session.id,
-                amount_total: session.amount_total || 0,
-                amount_total_pounds: penceToPounds(session.amount_total),
-                currency: session.currency || "gbp",
-                customer_email:
-                    session.customer_details?.email ||
-                    session.customer_email ||
-                    "No email",
-                customer_name: session.customer_details?.name || "No name",
-                phone: session.customer_details?.phone || "No phone",
-                created: session.created,
-                created_iso: session.created
-                    ? new Date(session.created * 1000).toISOString()
-                    : null,
-                payment_status: session.payment_status,
-                checkout_status: session.status,
-                payment_intent: getPaymentIntentId(session),
-                metadata: session.metadata || {}
-            }));
+        const giveawayRows = await getGiveawayClassifications(
+            sessions,
+            adminData,
+            {
+                strictRefundCheck: false
+            }
+        );
+
+        const eligibleOrders = giveawayRows
+            .filter((row) => row.classification.eligible)
+            .map((row) => row.order);
+
+        const excludedOrders = giveawayRows
+            .filter((row) => {
+                return row.classification.paid && !row.classification.eligible;
+            })
+            .map((row) => row.order);
+
+        const stripeRefundedOrders = excludedOrders.filter((order) => {
+            return order.stripe_refund?.refunded === true;
+        });
+
+        const manuallyRefundedOrders = excludedOrders.filter((order) => {
+            return order.exclusion_reason === "manual_refunded";
+        });
+
+        const refundCheckFailedOrders = excludedOrders.filter((order) => {
+            return order.exclusion_reason === "stripe_refund_check_failed";
+        });
 
         const progress = await getGiveawayProgress({ forceRefresh: true });
 
@@ -560,7 +790,15 @@ app.get("/api/admin/giveaway/eligible-orders", requireAdmin, async (req, res) =>
             progress,
             stripeHasMoreAfterThisBatch: hasMore,
             eligibleOrderCount: eligibleOrders.length,
-            eligibleOrders
+            excludedOrderCount: excludedOrders.length,
+            stripeRefundedExcludedCount: stripeRefundedOrders.length,
+            manualRefundedExcludedCount: manuallyRefundedOrders.length,
+            refundCheckFailedCount: refundCheckFailedOrders.length,
+            eligibleOrders,
+            excludedOrders,
+            stripeRefundedOrders,
+            manuallyRefundedOrders,
+            refundCheckFailedOrders
         });
 
     } catch (err) {
@@ -581,7 +819,8 @@ app.get("/api/admin/order-debug", requireAdmin, async (req, res) => {
 
         const bundle = await getStripeOrderBundle(limit, {
             includeLineItems: false,
-            includeRaw: true
+            includeRaw: true,
+            includeRefundInfo: true
         });
 
         const paidOrders = bundle.orders.filter(isPaidStripeOrder);
@@ -652,7 +891,8 @@ app.get("/api/admin/raw-orders", requireAdmin, async (req, res) => {
 
         const bundle = await getStripeOrderBundle(limit, {
             includeLineItems: false,
-            includeRaw: true
+            includeRaw: true,
+            includeRefundInfo: true
         });
 
         res.json({
@@ -679,7 +919,8 @@ app.get("/api/admin/orders", requireAdmin, async (req, res) => {
 
         const bundle = await getStripeOrderBundle(limit, {
             includeLineItems: true,
-            includeRaw: false
+            includeRaw: false,
+            includeRefundInfo: true
         });
 
         res.json({

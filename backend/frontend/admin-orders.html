@@ -154,6 +154,48 @@ function fulfilmentBadge(status) {
     return `<span class="admin-badge badge-neutral">New</span>`;
 }
 
+function getStripeRefund(order) {
+    return order.stripe_refund || {};
+}
+
+function refundBadge(order) {
+    const refund = getStripeRefund(order);
+
+    if (getFulfilment(order) === "refunded") {
+        return `<span class="admin-badge badge-bad">Admin Refunded</span>`;
+    }
+
+    if (refund.refunded) {
+        const label = refund.refund_type === "full"
+            ? "Stripe Full Refund"
+            : "Stripe Partial Refund";
+
+        return `<span class="admin-badge badge-bad">${label}</span>`;
+    }
+
+    if (refund.check_status === "error") {
+        return `<span class="admin-badge badge-warning">Refund Check Failed</span>`;
+    }
+
+    if (getPaymentStatus(order) === "paid") {
+        return `<span class="admin-badge badge-good">Not Refunded</span>`;
+    }
+
+    return `<span class="admin-badge badge-neutral">N/A</span>`;
+}
+
+function giveawayBadge(order) {
+    if (order.giveaway_eligible) {
+        return `<span class="admin-badge badge-good">Eligible</span>`;
+    }
+
+    if (getPaymentStatus(order) !== "paid") {
+        return `<span class="admin-badge badge-neutral">Not Paid</span>`;
+    }
+
+    return `<span class="admin-badge badge-bad">Excluded</span>`;
+}
+
 function updateSummary() {
     const paidOrders = allOrders.filter((order) => getPaymentStatus(order) === "paid");
     const unpaidOrders = allOrders.filter((order) => getPaymentStatus(order) !== "paid");
@@ -181,6 +223,10 @@ function getSearchText(order) {
         ${order.status}
         ${getFulfilment(order)}
         ${order.admin?.note || ""}
+        ${order.refund_status || ""}
+        ${order.stripe_refund?.refund_type || ""}
+        ${order.stripe_refund?.amount_refunded || ""}
+        ${order.giveaway_eligible ? "giveaway eligible" : "giveaway excluded"}
         ${itemText}
     `.toLowerCase();
 }
@@ -264,9 +310,11 @@ function renderOrders() {
                 <thead>
                     <tr>
                         <th>Payment</th>
+                        <th>Refund</th>
                         <th>Customer</th>
                         <th>Total</th>
                         <th>Fulfilment</th>
+                        <th>Giveaway</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
@@ -283,6 +331,15 @@ function renderOrders() {
                             </td>
 
                             <td>
+                                ${refundBadge(order)}
+                                ${order.stripe_refund?.amount_refunded ? `
+                                    <div class="admin-muted" style="margin-top:6px;">
+                                        ${moneyFromPence(order.stripe_refund.amount_refunded)} refunded
+                                    </div>
+                                ` : ""}
+                            </td>
+
+                            <td>
                                 <strong>${escapeHTML(order.customer_name || "No name")}</strong>
                                 <div class="admin-muted">${escapeHTML(order.customer_email || "No email")}</div>
                                 <div class="admin-muted">${escapeHTML(order.phone || "No phone")}</div>
@@ -294,6 +351,10 @@ function renderOrders() {
 
                             <td>
                                 ${fulfilmentBadge(getFulfilment(order))}
+                            </td>
+
+                            <td>
+                                ${giveawayBadge(order)}
                             </td>
 
                             <td>
@@ -312,6 +373,16 @@ function renderOrders() {
                                 <div class="admin-detail-box" id="details-${escapeHTML(order.id)}">
                                     <h3>Items</h3>
                                     ${renderItems(order)}
+
+                                    <h3 style="margin-top:18px;">Refund / Giveaway</h3>
+                                    <p>
+                                        ${refundBadge(order)} ${giveawayBadge(order)}
+                                    </p>
+                                    <p class="admin-muted">
+                                        Stripe refund check: ${escapeHTML(order.stripe_refund?.check_status || "not checked")}
+                                        ${order.stripe_refund?.amount_refunded ? ` • Amount refunded: ${moneyFromPence(order.stripe_refund.amount_refunded)}` : ""}
+                                        ${order.stripe_refund?.error ? ` • Error: ${escapeHTML(order.stripe_refund.error)}` : ""}
+                                    </p>
 
                                     <h3 style="margin-top:18px;">Fulfilment</h3>
 

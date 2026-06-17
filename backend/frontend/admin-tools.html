@@ -102,13 +102,13 @@ const endpoints = [
         description: "Used from the Orders details panel to mark packed, ready, collected, refunded etc."
     },
     {
-        title: "Giveaway Entries",
+        title: "Giveaway Entries / Refund Check",
         method: "GET",
         path: "/api/admin/giveaway/eligible-orders",
         auth: true,
         kind: "fetch",
         page: "/admin-giveaway",
-        description: "All paid non-refunded orders eligible for the hoodie giveaway."
+        description: "Refund-aware giveaway entries. Excludes Stripe-refunded and admin-refunded paid orders."
     },
     {
         title: "Admin Messages",
@@ -170,7 +170,7 @@ const endpoints = [
         auth: false,
         kind: "fetch",
         open: true,
-        description: "Live public giveaway progress used by the website banner."
+        description: "Live public giveaway progress used by the website banner. Count is refund-aware."
     },
     {
         title: "Create Checkout Session",
