@@ -2021,369 +2021,184 @@ select option {
 }
 
 /* =========================
-   CONTACT PAGE MOBILE FIX
+   CONTACT PAGE RESPONSIVE FIX
+   Mobile only — does not affect desktop layout
 ========================= */
 
-* {
-    box-sizing: border-box;
+/* Safe if you changed the contact heading to use a span */
+.contact-content h1 span {
+    display: block;
 }
 
-html,
-body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-/* Contact hero */
-.contact-hero {
-    position: relative;
-    min-height: 78vh;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    padding: 150px 7vw 80px;
-}
-
-.contact-hero-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-}
-
-.contact-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        90deg,
-        rgba(2, 8, 22, 0.92),
-        rgba(2, 8, 22, 0.55),
-        rgba(2, 8, 22, 0.2)
-    );
-    z-index: 1;
-}
-
-.contact-content {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 900px;
-}
-
-.contact-content h1 {
-    font-size: clamp(2.7rem, 8vw, 7rem);
-    line-height: 0.92;
-    letter-spacing: -0.06em;
-    margin: 10px 0 20px;
-    max-width: 900px;
-}
-
-.contact-sub {
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    line-height: 1.6;
-    max-width: 560px;
-}
-
-/* Contact form area */
-.contact-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
-    gap: 32px;
-    align-items: start;
-}
-
-.contact-form,
-.contact-info {
-    min-width: 0;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    max-width: 100%;
-    font-size: 16px;
-}
-
-/* Phone/tablet */
 @media (max-width: 768px) {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Keep the scrolling collection bar as one slim line */
     .top-bar {
+        height: 38px;
+        padding: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .top-bar-track {
+        display: inline-flex;
+        align-items: center;
+        width: max-content;
+    }
+
+    .top-bar-message {
+        white-space: nowrap;
+        padding: 0 30px;
         font-size: 10px;
-        line-height: 1.35;
-        padding: 8px 12px;
-        white-space: normal;
-        text-align: center;
+        line-height: 1;
+        letter-spacing: 1px;
     }
 
+    /* Mobile navbar spacing */
     .navbar {
-        padding: 14px 16px;
+        top: 38px;
+        padding: 16px 20px;
     }
 
-    .logo img {
-        max-height: 52px;
+    .nav-left,
+    .nav-right {
+        gap: 14px;
+        min-width: 74px;
+    }
+
+    .nav-right {
+        justify-content: flex-end;
     }
 
     .icon-btn {
-        font-size: 20px;
+        font-size: 22px;
     }
 
+    .logo img {
+        width: 94px;
+        max-width: 94px;
+    }
+
+    /* Contact hero mobile layout */
     .contact-hero {
-        min-height: 68vh;
-        padding: 125px 18px 60px;
-        align-items: flex-end;
-    }
-
-    .contact-overlay {
-        background: linear-gradient(
-            180deg,
-            rgba(2, 8, 22, 0.3),
-            rgba(2, 8, 22, 0.72),
-            rgba(2, 8, 22, 0.96)
-        );
+        height: 78vh;
+        height: 78svh;
+        min-height: 580px;
     }
 
     .contact-content {
-        max-width: 100%;
+        left: 18px;
+        right: 18px;
+        bottom: 72px;
+        max-width: calc(100% - 36px);
     }
 
     .contact-label {
-        font-size: 0.72rem;
-        letter-spacing: 0.18em;
+        font-size: 13px;
+        letter-spacing: 2.5px;
+        margin-bottom: 14px;
     }
 
     .contact-content h1 {
-        font-size: clamp(2.35rem, 13vw, 4.4rem);
-        line-height: 0.9;
-        letter-spacing: -0.045em;
+        max-width: 100%;
+        font-size: clamp(40px, 11vw, 52px);
+        line-height: 0.96;
+        letter-spacing: -1.5px;
         margin-bottom: 16px;
+        overflow-wrap: normal;
+        word-break: normal;
     }
 
     .contact-sub {
-        font-size: 0.98rem;
+        max-width: 335px;
+        font-size: 16px;
         line-height: 1.55;
-        max-width: 95%;
     }
 
+    /* Stack contact form cleanly on mobile only */
     .contact-section {
-        padding-top: 50px;
-        padding-bottom: 50px;
+        margin-top: 60px;
     }
 
     .contact-grid {
         grid-template-columns: 1fr;
-        gap: 22px;
+        gap: 34px;
     }
 
     .contact-form,
     .contact-info {
-        width: 100%;
-        padding: 24px 18px;
+        min-width: 0;
     }
 
     .contact-form h2,
-    .contact-info h2,
-    .contact-cta h2 {
-        font-size: clamp(1.7rem, 8vw, 2.4rem);
-        line-height: 1.05;
+    .contact-info h2 {
+        font-size: 30px;
     }
 
-    .contact-info p,
-    .contact-info a,
-    .contact-cta p {
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    .hero-btn,
-    .outline-btn {
+    .contact-form input,
+    .contact-form textarea {
         width: 100%;
-        text-align: center;
-        justify-content: center;
+        max-width: 100%;
+        font-size: 16px;
     }
 
-    .cart-panel {
-        width: min(100%, 390px);
+    .contact-cta {
+        margin-top: 80px;
+        padding-bottom: 80px;
+    }
+
+    .contact-cta h2 {
+        font-size: 40px;
+        line-height: 1.05;
     }
 
     .search-box {
         width: calc(100% - 32px);
     }
-
-    .search-box input {
-        min-width: 0;
-        font-size: 16px;
-    }
 }
 
-/* Very small phones */
-@media (max-width: 420px) {
-    .contact-hero {
-        min-height: 64vh;
-        padding: 115px 16px 48px;
-    }
-
-    .contact-content h1 {
-        font-size: clamp(2.15rem, 14vw, 3.45rem);
-    }
-
-    .contact-form,
-    .contact-info {
-        padding: 22px 16px;
-    }
-
-    .section {
-        padding-left: 16px;
-        padding-right: 16px;
-    }
-}
-
-
-/* =========================
-   HARD MOBILE OVERFLOW FIX
-   Contact page / global mobile
-========================= */
-
-html,
-body {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-}
-
-body {
-    position: relative;
-}
-
-/* Stop any full-width sections from becoming wider than the phone */
-.top-bar,
-.navbar,
-.contact-hero,
-.contact-section,
-.contact-cta,
-.section,
-footer {
-    width: 100% !important;
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
-}
-
-/* Fix top banner cutting/repeating */
-.top-bar {
-    white-space: normal !important;
-    text-align: center !important;
-    line-height: 1.35 !important;
-    letter-spacing: 0.14em !important;
-    padding: 8px 14px !important;
-}
-
-/* Fix navbar fitting */
-.navbar {
-    left: 0 !important;
-    right: 0 !important;
-    padding: 14px 16px !important;
-    display: grid !important;
-    grid-template-columns: 1fr auto 1fr !important;
-    align-items: center !important;
-}
-
-.nav-left {
-    justify-content: flex-start !important;
-}
-
-.nav-right {
-    justify-content: flex-end !important;
-}
-
-.logo img {
-    max-width: 92px !important;
-    height: auto !important;
-}
-
-/* Contact hero fix */
-.contact-hero {
-    min-height: 72vh !important;
-    padding: 120px 18px 55px !important;
-    display: flex !important;
-    align-items: flex-end !important;
-}
-
-/* This is the important bit */
-.contact-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    overflow-wrap: break-word !important;
-    word-break: normal !important;
-}
-
-.contact-content h1 {
-    width: 100% !important;
-    max-width: 100% !important;
-    font-size: clamp(2.4rem, 12vw, 3.7rem) !important;
-    line-height: 0.95 !important;
-    letter-spacing: -0.055em !important;
-    white-space: normal !important;
-    overflow-wrap: normal !important;
-    word-break: normal !important;
-    margin: 12px 0 18px !important;
-}
-
-.contact-sub {
-    width: 100% !important;
-    max-width: 100% !important;
-    font-size: 1rem !important;
-    line-height: 1.55 !important;
-    white-space: normal !important;
-}
-
-/* Stack form/contact cards */
-.contact-grid {
-    width: 100% !important;
-    max-width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 22px !important;
-}
-
-.contact-form,
-.contact-info {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100% !important;
-    max-width: 100% !important;
-    font-size: 16px !important;
-}
-
-/* Smaller phones */
 @media (max-width: 430px) {
-    .contact-content h1 {
-        font-size: clamp(2.15rem, 11vw, 3.15rem) !important;
-        line-height: 0.98 !important;
+    .navbar {
+        padding: 15px 16px;
     }
 
-    .contact-hero {
-        padding-left: 16px !important;
-        padding-right: 16px !important;
+    .nav-left,
+    .nav-right {
+        gap: 12px;
+        min-width: 68px;
     }
 
     .logo img {
-        max-width: 82px !important;
+        width: 84px;
+        max-width: 84px;
     }
 
-    .icon-btn {
-        font-size: 20px !important;
-        padding: 6px !important;
+    .contact-content {
+        left: 16px;
+        right: 16px;
+        bottom: 66px;
+        max-width: calc(100% - 32px);
     }
-}
 
-.contact-content h1 span {
-    display: block;
+    .contact-content h1 {
+        font-size: clamp(37px, 10.7vw, 46px);
+        line-height: 0.98;
+        letter-spacing: -1px;
+    }
+
+    .contact-sub {
+        max-width: 310px;
+        font-size: 15.5px;
+    }
+
+    .section {
+        width: 92%;
+    }
 }
