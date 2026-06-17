@@ -2019,3 +2019,223 @@ select option {
         text-align: left;
     }
 }
+
+/* =========================
+   CONTACT PAGE MOBILE FIX
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Contact hero */
+.contact-hero {
+    position: relative;
+    min-height: 78vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 150px 7vw 80px;
+}
+
+.contact-hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.contact-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(2, 8, 22, 0.92),
+        rgba(2, 8, 22, 0.55),
+        rgba(2, 8, 22, 0.2)
+    );
+    z-index: 1;
+}
+
+.contact-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 900px;
+}
+
+.contact-content h1 {
+    font-size: clamp(2.7rem, 8vw, 7rem);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
+    margin: 10px 0 20px;
+    max-width: 900px;
+}
+
+.contact-sub {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    line-height: 1.6;
+    max-width: 560px;
+}
+
+/* Contact form area */
+.contact-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.contact-form,
+.contact-info {
+    min-width: 0;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+}
+
+/* Phone/tablet */
+@media (max-width: 768px) {
+    .top-bar {
+        font-size: 10px;
+        line-height: 1.35;
+        padding: 8px 12px;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .navbar {
+        padding: 14px 16px;
+    }
+
+    .logo img {
+        max-height: 52px;
+    }
+
+    .icon-btn {
+        font-size: 20px;
+    }
+
+    .contact-hero {
+        min-height: 68vh;
+        padding: 125px 18px 60px;
+        align-items: flex-end;
+    }
+
+    .contact-overlay {
+        background: linear-gradient(
+            180deg,
+            rgba(2, 8, 22, 0.3),
+            rgba(2, 8, 22, 0.72),
+            rgba(2, 8, 22, 0.96)
+        );
+    }
+
+    .contact-content {
+        max-width: 100%;
+    }
+
+    .contact-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+    }
+
+    .contact-content h1 {
+        font-size: clamp(2.35rem, 13vw, 4.4rem);
+        line-height: 0.9;
+        letter-spacing: -0.045em;
+        margin-bottom: 16px;
+    }
+
+    .contact-sub {
+        font-size: 0.98rem;
+        line-height: 1.55;
+        max-width: 95%;
+    }
+
+    .contact-section {
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .contact-form,
+    .contact-info {
+        width: 100%;
+        padding: 24px 18px;
+    }
+
+    .contact-form h2,
+    .contact-info h2,
+    .contact-cta h2 {
+        font-size: clamp(1.7rem, 8vw, 2.4rem);
+        line-height: 1.05;
+    }
+
+    .contact-info p,
+    .contact-info a,
+    .contact-cta p {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .hero-btn,
+    .outline-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .cart-panel {
+        width: min(100%, 390px);
+    }
+
+    .search-box {
+        width: calc(100% - 32px);
+    }
+
+    .search-box input {
+        min-width: 0;
+        font-size: 16px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+    .contact-hero {
+        min-height: 64vh;
+        padding: 115px 16px 48px;
+    }
+
+    .contact-content h1 {
+        font-size: clamp(2.15rem, 14vw, 3.45rem);
+    }
+
+    .contact-form,
+    .contact-info {
+        padding: 22px 16px;
+    }
+
+    .section {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
