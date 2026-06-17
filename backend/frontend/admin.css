@@ -465,3 +465,54 @@ a.admin-btn {
         flex-direction: column;
     }
 }
+
+/* =========================
+   ADMIN SELECT DROPDOWN FIX
+   Keeps admin selects readable on dark UI:
+   closed select text = white
+   dropdown options = white on dark
+   hovered/selected option = black on light
+========================= */
+
+body.admin-page select,
+body.admin-page .admin-controls select,
+body.admin-page .admin-input,
+body.admin-page select.admin-input {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+body.admin-page select:focus,
+body.admin-page .admin-controls select:focus,
+body.admin-page .admin-input:focus,
+body.admin-page select.admin-input:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.11) !important;
+    border-color: rgba(255, 255, 255, 0.38);
+    outline: none;
+}
+
+body.admin-page select option,
+body.admin-page .admin-controls select option,
+body.admin-page .admin-input option,
+body.admin-page select.admin-input option {
+    color: #ffffff !important;
+    background-color: #020816 !important;
+}
+
+body.admin-page select option:hover,
+body.admin-page select option:focus,
+body.admin-page select option:active,
+body.admin-page select option:checked,
+body.admin-page .admin-controls select option:hover,
+body.admin-page .admin-controls select option:focus,
+body.admin-page .admin-controls select option:active,
+body.admin-page .admin-controls select option:checked,
+body.admin-page .admin-input option:hover,
+body.admin-page .admin-input option:focus,
+body.admin-page .admin-input option:active,
+body.admin-page .admin-input option:checked {
+    color: #020816 !important;
+    background-color: #ffffff !important;
+}
