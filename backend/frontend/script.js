@@ -77,22 +77,22 @@ document.addEventListener("DOMContentLoaded", () => {
         "white-hoodie": {
             title: "Hoodie — White",
             price: 34.99,
-            images: ["/assets/hoodie.jpg", "/assets/hoodieback.jpg"]
+            images: ["/assets/hoodie.png", "/assets/hoodieback.png"]
         },
         "black-hoodie": {
             title: "Hoodie — Black",
             price: 34.99,
-            images: ["/assets/hoodie2.jpg", "/assets/hoodie2back.jpg"]
+            images: ["/assets/hoodie2.png", "/assets/hoodie2back.png"]
         },
         "white-tshirt": {
             title: "T-Shirt — White",
             price: 24.99,
-            images: ["/assets/tshirt.jpg", "/assets/tshirtback.jpg"]
+            images: ["/assets/tshirt.png", "/assets/tshirtback.png"]
         },
         "black-tshirt": {
             title: "T-Shirt — Black",
             price: 24.99,
-            images: ["/assets/tshirt2.jpg", "/assets/tshirt2back.jpg"]
+            images: ["/assets/tshirt2.png", "/assets/tshirt2back.png"]
         }
     };
 
