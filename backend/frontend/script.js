@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (hero) {
             hero.insertAdjacentElement("afterend", banner);
         } else if (productPage) {
+            banner.classList.add("giveaway-banner-product-page");
             productPage.insertAdjacentElement("beforebegin", banner);
         } else if (navbar) {
             navbar.insertAdjacentElement("afterend", banner);

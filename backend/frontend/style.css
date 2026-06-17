@@ -1990,6 +1990,17 @@ select option {
     margin-bottom: 12px;
 }
 
+/* Product pages do not have a full hero section, so the absolute navbar overlaps early content. */
+.giveaway-banner-product-page {
+    margin-top: 178px;
+}
+
+@media (max-width: 768px) {
+    .giveaway-banner-product-page {
+        margin-top: 142px;
+    }
+}
+
 @media (max-width: 800px) {
     .giveaway-banner {
         padding: 18px 16px;

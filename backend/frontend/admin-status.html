@@ -206,10 +206,9 @@
             <p style="opacity:.7;">Server, Stripe, Railway and vessel tracking health.</p>
         </div>
 
-        <div class="admin-actions">
-            <a href="/admin-tools" class="admin-btn">API Tools</a>
-            <a href="/admin-dashboard" class="hero-btn">← Back to Dashboard</a>
-        </div>
+        <a href="/admin-dashboard" class="hero-btn">
+            ← Back to Dashboard
+        </a>
     </div>
 
     <div class="admin-controls">
@@ -217,12 +216,8 @@
             Refresh Status
         </button>
 
-        <button class="small-btn" id="rawStatusBtn">
+        <a href="/api/admin/status" class="small-btn" target="_blank" rel="noopener noreferrer">
             Raw API
-        </button>
-
-        <a href="/admin-tools" class="small-btn">
-            All API Tools
         </a>
 
         <span class="muted" id="lastChecked">
@@ -247,7 +242,6 @@ if (!token) {
 
 const statusBox = document.getElementById("status");
 const refreshBtn = document.getElementById("refreshBtn");
-const rawStatusBtn = document.getElementById("rawStatusBtn");
 const lastChecked = document.getElementById("lastChecked");
 
 function escapeHTML(value) {
@@ -580,15 +574,6 @@ async function loadStatus() {
 }
 
 refreshBtn.addEventListener("click", loadStatus);
-
-rawStatusBtn.addEventListener("click", async () => {
-    const res = await window.adminFetch("/api/admin/status");
-    if (!res) return;
-
-    const data = await res.json();
-    statusBox.innerHTML = `<pre class="admin-raw-output">${escapeHTML(JSON.stringify(data, null, 2))}</pre>`;
-    lastChecked.textContent = `Raw API checked: ${new Date().toLocaleString()}`;
-});
 
 loadStatus();
 
