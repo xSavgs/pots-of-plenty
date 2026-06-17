@@ -77,7 +77,28 @@ document.addEventListener("DOMContentLoaded", () => {
         // Giveaway styles now live in style.css.
     }
 
+    function getCurrentPagePath() {
+        return window.location.pathname.replace(/\/+$/, "") || "/";
+    }
+
+    function shouldShowGiveawayBanner() {
+        const path = getCurrentPagePath();
+
+        return [
+            "/",
+            "/index",
+            "/shop",
+            "/product",
+            "/success"
+        ].includes(path);
+    }
+
     function buildGiveawayBanner() {
+        if (!shouldShowGiveawayBanner()) {
+            document.getElementById("giveawayBanner")?.remove();
+            return null;
+        }
+
         if (document.getElementById("giveawayBanner")) {
             return document.getElementById("giveawayBanner");
         }
@@ -118,11 +139,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const productPage = document.querySelector(".product-page");
         const navbar = document.querySelector(".navbar");
 
-        if (hero) {
-            hero.insertAdjacentElement("afterend", banner);
-        } else if (productPage) {
+        if (productPage) {
             banner.classList.add("giveaway-banner-product-page");
             productPage.insertAdjacentElement("beforebegin", banner);
+        } else if (hero) {
+            hero.insertAdjacentElement("afterend", banner);
         } else if (navbar) {
             navbar.insertAdjacentElement("afterend", banner);
         } else {
@@ -170,9 +191,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function setupGiveawayCounter() {
-        injectGiveawayStyles();
-        buildGiveawayBanner();
         setupProductGiveawayNote();
+
+        if (!shouldShowGiveawayBanner()) {
+            document.getElementById("giveawayBanner")?.remove();
+            return;
+        }
+
+        injectGiveawayStyles();
+
+        const banner = buildGiveawayBanner();
+
+        if (!banner) {
+            return;
+        }
 
         try {
             const res = await fetch("/api/order-count");
